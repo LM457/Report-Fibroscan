@@ -85,6 +85,9 @@
     App.state.fileName = App.state.files.length === 1
       ? App.state.files[0].name
       : `${App.state.files.length.toLocaleString('en-US')} files`;
+    if (App.state.selectedFileId !== 'all' && !App.state.files.some(file => file.id === App.state.selectedFileId)) {
+      App.state.selectedFileId = 'all';
+    }
     App.state.tablePage = 1;
     if (!combined.length) App.state.selectedPatientIndex = null;
     else if (!combined[App.state.selectedPatientIndex]) App.state.selectedPatientIndex = 0;
@@ -163,6 +166,7 @@
     App.state.files = [];
     window.appData = [];
     App.state.fileName = '';
+    App.state.selectedFileId = 'all';
     App.state.selectedPatientIndex = null;
     Object.values(App.state.charts).forEach(chart => chart.destroy());
     App.state.charts = {};
@@ -175,6 +179,7 @@
     const entry = App.state.files.find(file => file.id === fileId);
     if (!entry) return;
     App.state.files = App.state.files.filter(file => file.id !== fileId);
+    if (App.state.selectedFileId === fileId) App.state.selectedFileId = 'all';
     rebuildCombinedData();
     renderAll();
     if (!App.state.data.length) navigate('overview');
@@ -192,9 +197,11 @@
     $('#file-pill').classList.toggle('hidden', !hasData);
     $('#clear-data-btn').classList.toggle('hidden', !hasData);
     $('#export-pdf-btn').classList.toggle('hidden', !hasData);
-    $('#current-file-name').textContent = hasData ? App.state.fileName : '—';
+    const selectedFile = App.state.files.find(file => file.id === App.state.selectedFileId);
+    $('#current-file-name').textContent = hasData ? (selectedFile?.name || App.state.fileName) : '—';
 
     if (!hasData) return;
+    renderDataViewOptions();
     renderFileManager();
     renderKPIs();
     renderDataQuality();
@@ -207,6 +214,18 @@
       App.renderOverviewCharts();
       if (App.state.activePage === 'analysis') App.renderAnalysisCharts();
     });
+  }
+
+  function renderDataViewOptions() {
+    const select = $('#analysis-mode');
+    if (!select) return;
+    if (App.state.selectedFileId !== 'all' && !App.state.files.some(file => file.id === App.state.selectedFileId)) {
+      App.state.selectedFileId = 'all';
+    }
+    select.innerHTML = '<option value="all">All imported files</option>' + App.state.files.map(file => (
+      `<option value="${escapeHTML(file.id)}">${escapeHTML(file.name)} (${file.activeCount.toLocaleString('en-US')} exams)</option>`
+    )).join('');
+    select.value = App.state.selectedFileId;
   }
 
   function renderFileManager() {
@@ -223,15 +242,17 @@
 
   function renderKPIs() {
     const data = App.getAnalysisData();
-    const allExams = App.state.data;
+    const selectedFile = App.state.files.find(file => file.id === App.state.selectedFileId);
     const liverData = data.filter(patient => patient.cap !== null || patient.stiffness !== null);
     const highRisk = liverData.filter(App.isHighRisk);
     const averageBMI = App.average(data.map(patient => patient.bmi));
     const averageCAP = App.average(data.map(patient => patient.cap));
     const complete = data.filter(patient => patient.height !== null && patient.weight !== null && patient.bmi !== null && patient.waist !== null && patient.gender !== 'Unspecified').length;
-    $('#kpi-total').textContent = App.getUniquePatientCount(allExams).toLocaleString('en-US');
-    $('#kpi-exams').textContent = allExams.length.toLocaleString('en-US');
-    $('#kpi-files').textContent = `${App.state.files.length.toLocaleString('en-US')} files · ${App.state.analysisMode === 'latest' ? 'Latest result view' : 'All examinations view'}`;
+    $('#kpi-total').textContent = App.getUniquePatientCount(data).toLocaleString('en-US');
+    $('#kpi-exams').textContent = data.length.toLocaleString('en-US');
+    $('#kpi-files').textContent = selectedFile
+      ? `Selected file · ${selectedFile.name}`
+      : `${App.state.files.length.toLocaleString('en-US')} files · Combined view`;
     $('#kpi-complete').textContent = complete === data.length
       ? 'Complete anthropometric data for all examinations'
       : complete === 0 ? 'Basic liver assessment · Anthropometric data unavailable' : `Complete anthropometric data for ${complete} of ${data.length} examinations`;
@@ -312,9 +333,10 @@
 
   function renderDateFilter() {
     const selected = $('#date-filter').value;
-    const dates = [...new Set(App.state.data.map(patient => App.toISODate(patient.date)).filter(Boolean))].sort().reverse();
+    const analysisData = App.getAnalysisData();
+    const dates = [...new Set(analysisData.map(patient => App.toISODate(patient.date)).filter(Boolean))].sort().reverse();
     $('#date-filter').innerHTML = '<option value="">All Dates</option>' + dates.map(date => {
-      const source = App.state.data.find(patient => App.toISODate(patient.date) === date).date;
+      const source = analysisData.find(patient => App.toISODate(patient.date) === date).date;
       return `<option value="${date}">${App.formatDate(source, 'long')}</option>`;
     }).join('');
     if (dates.includes(selected)) $('#date-filter').value = selected;
@@ -326,7 +348,7 @@
     const date = $('#date-filter').value;
     const steatosis = $('#steatosis-filter').value;
     const fibrosis = $('#fibrosis-filter').value;
-    return App.state.data.filter(patient => (
+    return App.getAnalysisData().filter(patient => (
       `${patient.name} ${patient.id}`.toLowerCase().includes(keyword) &&
       (!gender || patient.gender === gender) &&
       (!date || App.toISODate(patient.date) === date) &&
@@ -406,7 +428,7 @@
   function renderHealthCard(patient) {
     if (!patient) return;
     const patientKey = App.getPatientKey(patient);
-    const visits = App.state.data.filter(item => App.getPatientKey(item) === patientKey).sort((a, b) => {
+    const visits = App.getAnalysisData().filter(item => App.getPatientKey(item) === patientKey).sort((a, b) => {
       const aTime = a.date instanceof Date ? a.date.valueOf() : -1;
       const bTime = b.date instanceof Date ? b.date.valueOf() : -1;
       return bTime - aTime || App.state.data.indexOf(b) - App.state.data.indexOf(a);
@@ -644,10 +666,16 @@
       if (button) removeFile(button.dataset.removeFile);
     });
     $('#analysis-mode').addEventListener('change', event => {
-      App.state.analysisMode = event.target.value === 'latest' ? 'latest' : 'all';
+      const selectedFileId = event.target.value;
+      App.state.selectedFileId = selectedFileId === 'all' || App.state.files.some(file => file.id === selectedFileId)
+        ? selectedFileId
+        : 'all';
       App.state.tablePage = 1;
+      const firstVisiblePatient = App.getAnalysisData()[0];
+      App.state.selectedPatientIndex = firstVisiblePatient ? App.state.data.indexOf(firstVisiblePatient) : null;
       renderAll();
-      showToast(App.state.analysisMode === 'latest' ? 'Showing the latest examination for each patient.' : 'Showing all examination records.');
+      const selectedFile = App.state.files.find(file => file.id === App.state.selectedFileId);
+      showToast(selectedFile ? `Showing data from ${selectedFile.name}.` : 'Showing the combined data from all imported files.');
     });
     ['patient-search', 'gender-filter', 'date-filter', 'steatosis-filter', 'fibrosis-filter'].forEach(id => $(`#${id}`).addEventListener(id === 'patient-search' ? 'input' : 'change', renderPatientList));
     $('#patient-list').addEventListener('click', event => {
@@ -679,7 +707,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     App.loadSettings();
     window.appData = [];
-    $('#analysis-mode').value = App.state.analysisMode;
     fillSettingsForm();
     bindEvents();
     const requestedPage = window.location.hash.slice(1);

@@ -23,7 +23,7 @@ window.FibroApp = {
     data: [],
     files: [],
     fileName: '',
-    analysisMode: 'all',
+    selectedFileId: 'all',
     settings: {},
     charts: {},
     selectedPatientIndex: null,

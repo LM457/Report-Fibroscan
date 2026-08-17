@@ -47,9 +47,11 @@
 
   function dashboardPage(chartImages = {}) {
     const data = App.getAnalysisData ? App.getAnalysisData() : App.state.data;
-    const allExams = App.state.data;
-    const uniquePatients = App.getUniquePatientCount ? App.getUniquePatientCount(allExams) : allExams.length;
-    const fileNames = (App.state.files || []).map(file => file.name);
+    const selectedFiles = App.state.selectedFileId === 'all'
+      ? (App.state.files || [])
+      : (App.state.files || []).filter(file => file.id === App.state.selectedFileId);
+    const uniquePatients = App.getUniquePatientCount ? App.getUniquePatientCount(data) : data.length;
+    const fileNames = selectedFiles.map(file => file.name);
     const fileSummary = fileNames.length > 3
       ? `${fileNames.slice(0, 3).join(', ')}, plus ${fileNames.length - 3} more`
       : fileNames.join(', ');
@@ -63,9 +65,9 @@
     const dateText = dates.length ? `${App.formatDate(dates[0], 'long')} - ${App.formatDate(dates.at(-1), 'long')}` : 'Not specified';
     const bars = (title, subtitle, items) => `<article class="pdf-panel"><div class="pdf-panel-head"><h2>${title}</h2><p>${subtitle}</p></div><div class="pdf-bars">${items.map(item => `<div class="pdf-bar-row"><div><span><i style="background:${item.color}"></i>${item.code} ${item.label}</span><b>${item.count} examinations · ${item.percent.toFixed(1)}%</b></div><em><i style="width:${item.percent}%;background:${item.color}"></i></em></div>`).join('')}</div></article>`;
     const content = `
-      <div class="pdf-meta"><span><b>Source files:</b> ${escapeHTML(fileNames.length ? `${fileNames.length} files - ${fileSummary}` : App.state.fileName)}</span><span><b>Examination period:</b> ${dateText}</span><span><b>Analysis view:</b> ${App.state.analysisMode === 'latest' ? 'Latest examination per patient' : 'All examinations'} · Generated ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}</span></div>
+      <div class="pdf-meta"><span><b>Source files:</b> ${escapeHTML(fileNames.length ? `${fileNames.length} file${fileNames.length === 1 ? '' : 's'} - ${fileSummary}` : App.state.fileName)}</span><span><b>Examination period:</b> ${dateText}</span><span><b>Data view:</b> ${escapeHTML(App.state.selectedFileId === 'all' ? 'All imported files' : (fileNames[0] || 'Selected file'))} · Generated ${new Intl.DateTimeFormat('en-GB', { dateStyle: 'long', timeStyle: 'short' }).format(new Date())}</span></div>
       <div class="pdf-kpis">
-        <article><span><i class="fa-solid fa-user-group"></i></span><small>Unique Patients</small><strong>${uniquePatients.toLocaleString('en-US')} <em>patients</em></strong><p>${allExams.length.toLocaleString('en-US')} examinations from ${(App.state.files || []).length.toLocaleString('en-US')} files</p></article>
+        <article><span><i class="fa-solid fa-user-group"></i></span><small>Unique Patients</small><strong>${uniquePatients.toLocaleString('en-US')} <em>patients</em></strong><p>${data.length.toLocaleString('en-US')} examinations from ${selectedFiles.length.toLocaleString('en-US')} file${selectedFiles.length === 1 ? '' : 's'}</p></article>
         <article><span><i class="fa-solid fa-triangle-exclamation"></i></span><small>Elevated-Risk Criteria</small><strong>${liverData.length ? ((highRisk / liverData.length) * 100).toFixed(1) : '—'}${liverData.length ? '<em>%</em>' : ''}</strong><p>${liverData.length ? `${highRisk} examinations` : 'E Median/CAP data unavailable'}</p></article>
         <article><span><i class="fa-solid fa-weight-scale"></i></span><small>Mean Calculated BMI</small><strong>${metric(averageBMI, 1)}</strong><p>kg/m²</p></article>
         <article><span><i class="fa-solid fa-droplet"></i></span><small>Mean CAP</small><strong>${metric(averageCAP, 0)}</strong><p>dB/m</p></article>
@@ -139,15 +141,16 @@
   function patientPages() {
     const chunkSize = 17;
     const pages = [];
-    for (let start = 0; start < App.state.data.length; start += chunkSize) {
-      const chunk = App.state.data.slice(start, start + chunkSize);
+    const data = App.getAnalysisData ? App.getAnalysisData() : App.state.data;
+    for (let start = 0; start < data.length; start += chunkSize) {
+      const chunk = data.slice(start, start + chunkSize);
       const rows = chunk.map((p, index) => {
         const fibrosis = App.classifyFibrosis(p.stiffness);
         const cap = App.classifyCap(p.cap);
         const risk = App.isHighRisk(p) ? 'Elevated' : (fibrosis.code === 'F2' || cap.code === 'S2') ? 'Follow-up' : 'Lower';
         return `<tr><td>${start + index + 1}</td><td><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.id)} · Examiner: ${escapeHTML(p.examiner)}</small></td><td>${App.formatDate(p.date)}<small>${escapeHTML(p.sourceFile || '')}</small></td><td>${escapeHTML(p.gender)}</td><td>${metric(p.height, 1)}</td><td>${metric(p.weight, 1)}</td><td>${metric(p.bmi, 1)}</td><td>${metric(p.waist, 1)}</td><td>${metric(p.cap, 0)}<small>${cap.code}</small></td><td>${metric(p.stiffness, 1)}<small>${fibrosis.code}</small></td><td>${risk}</td></tr>`;
       }).join('');
-      const content = `<div class="pdf-table-caption"><span>Records ${start + 1}-${Math.min(start + chunkSize, App.state.data.length)} of ${App.state.data.length} examinations</span><span>Units: height/waist cm · weight kg · CAP dB/m · E kPa</span></div><article class="pdf-data-table"><table><thead><tr><th>#</th><th>Patient</th><th>Date/File</th><th>Sex</th><th>Height</th><th>Weight</th><th>BMI</th><th>Waist</th><th>CAP</th><th>E</th><th>Risk</th></tr></thead><tbody>${rows}</tbody></table></article><p class="pdf-table-note">BMI is calculated from height and weight. The S/F code below each measurement represents the category assigned using the thresholds in this report.</p>`;
+      const content = `<div class="pdf-table-caption"><span>Records ${start + 1}-${Math.min(start + chunkSize, data.length)} of ${data.length} examinations</span><span>Units: height/waist cm · weight kg · CAP dB/m · E kPa</span></div><article class="pdf-data-table"><table><thead><tr><th>#</th><th>Patient</th><th>Date/File</th><th>Sex</th><th>Height</th><th>Weight</th><th>BMI</th><th>Waist</th><th>CAP</th><th>E</th><th>Risk</th></tr></thead><tbody>${rows}</tbody></table></article><p class="pdf-table-note">BMI is calculated from height and weight. The S/F code below each measurement represents the category assigned using the thresholds in this report.</p>`;
       pages.push(pageShell('Individual Examination Data', 'COMPLETE DATA APPENDIX', content, 'pdf-patient-page'));
     }
     return pages.join('');

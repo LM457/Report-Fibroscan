@@ -14,12 +14,12 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/config.js?v=20260817-clinical-en" defer></script>
+  <script src="js/config.js?v=20260817-file-view" defer></script>
   <script src="js/logo-data.js" defer></script>
-  <script src="js/data.js?v=20260817-clinical-en" defer></script>
+  <script src="js/data.js?v=20260817-file-view" defer></script>
   <script src="js/charts.js?v=20260817-clinical-en" defer></script>
-  <script src="js/report.js?v=20260817-clinical-en" defer></script>
-  <script src="js/app.js?v=20260817-fibrosis-range-style" defer></script>
+  <script src="js/report.js?v=20260817-file-view" defer></script>
+  <script src="js/app.js?v=20260817-file-view" defer></script>
 </head>
 <body>
   <div class="app-shell">
@@ -117,7 +117,7 @@
             <div class="section-heading">
               <div><p class="section-kicker">Dataset Overview</p><h2>Patient Cohort Summary</h2></div>
               <div class="dataset-tools">
-                <label class="analysis-mode-control"><span>Data View</span><select id="analysis-mode"><option value="all">All Exams</option><option value="latest">Latest Results per Patient</option></select></label>
+                <label class="analysis-mode-control"><span>Data View</span><select id="analysis-mode" aria-label="Select imported file"><option value="all">All imported files</option></select></label>
                 <div class="dataset-meta"><span id="dataset-date-range">—</span><span id="dataset-updated">—</span></div>
               </div>
             </div>

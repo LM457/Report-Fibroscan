@@ -353,17 +353,9 @@
 
   App.getAnalysisData = function getAnalysisData() {
     const data = App.state.data || [];
-    if (App.state.analysisMode !== 'latest') return data;
-    const latestByPatient = new Map();
-    data.forEach((patient, index) => {
-      const key = App.getPatientKey(patient);
-      const current = latestByPatient.get(key);
-      const time = patient.date instanceof Date && !Number.isNaN(patient.date.valueOf()) ? patient.date.valueOf() : -1;
-      if (!current || time > current.time || (time === current.time && index > current.index)) {
-        latestByPatient.set(key, { patient, time, index });
-      }
-    });
-    return [...latestByPatient.values()].map(entry => entry.patient);
+    const selectedFileId = App.state.selectedFileId || 'all';
+    if (selectedFileId === 'all') return data;
+    return data.filter(patient => patient.sourceFileId === selectedFileId);
   };
 
 })(window.FibroApp);

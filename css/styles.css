@@ -88,7 +88,7 @@ h1, h2, h3, p { margin-top: 0; }
 .accepted-files i { margin-right: 5px; color: var(--teal); }
 .welcome-visual { position: relative; min-height: 520px; overflow: hidden; background: linear-gradient(145deg, #8b2334, #811d22 78%); clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); }
 .welcome-visual::before { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: 36px 36px; content: ""; }
-.visual-orbit { position: absolute; border: 3px solid var(--lime); border-radius: 50%; }
+.visual-orbit { position: absolute; border: 1px solid var(--lime); border-radius: 50%; }
 .orbit-one { top: 18%; left: 18%; width: 490px; height: 490px; }
 .orbit-two { top: 27%; left: 29%; width: 350px; height: 350px; border-color: var(--lime); }
 .scan-card { position: absolute; top: 50%; left: 50%; width: min(390px, 70%); padding: 25px; transform: translate(-44%, -51%) rotate(-1.5deg); border: 1px solid rgba(255,255,255,.14); border-radius: 20px; color: #fff; background: rgba(61, 22, 22, 0.74); box-shadow: 0 30px 70px rgba(0,0,0,.3); backdrop-filter: blur(10px); }
