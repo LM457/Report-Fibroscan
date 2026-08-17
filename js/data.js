@@ -240,17 +240,17 @@
 
   App.classifyFibrosis = function classifyFibrosis(value) {
     const s = App.state.settings;
-    if (value === null) return { code: '—', label: 'Data unavailable', className: 'neutral', color: App.colors.slate };
-    if (value <= s.eF01Max) return { code: 'F0-F1', label: 'No Significant Fibrosis', stage: 'No Significant Fibrosis', className: 'normal', color: App.colors.tealLight };
-    if (value < s.eF2) return { code: '—', label: 'Outside Configured Range', className: 'neutral', color: App.colors.slate };
-    if (value < s.eF3) return { code: 'F2', label: 'Moderate Fibrosis', stage: 'Moderate Liver Fibrosis', className: 'moderate', color: App.colors.amber };
-    if (value < s.eF4) return { code: 'F3', label: 'Severe Fibrosis', stage: 'Severe Liver Fibrosis', className: 'severe', color: App.colors.coral };
-    return { code: 'F4', label: 'Cirrhosis', stage: 'Cirrhosis', className: 'critical', color: App.colors.red };
+    if (value === null) return { code: '—', label: 'Data unavailable', range: 'Data unavailable', className: 'neutral', color: App.colors.slate };
+    if (value <= s.eF01Max) return { code: 'F0-F1', label: 'No Significant Fibrosis', stage: 'No Significant Fibrosis', range: `≤ ${s.eF01Max} kPa`, className: 'normal', color: App.colors.tealLight };
+    if (value < s.eF2) return { code: '—', label: 'Outside Configured Range', range: `≥ ${s.eF2} and < ${s.eF3} kPa`, className: 'neutral', color: App.colors.slate };
+    if (value < s.eF3) return { code: 'F2', label: 'Moderate Fibrosis', stage: 'Moderate Liver Fibrosis', range: `${s.eF2} - ${s.eF3 - 1} kPa`, className: 'moderate', color: App.colors.amber };
+    if (value < s.eF4) return { code: 'F3', label: 'Severe Fibrosis', stage: 'Severe Liver Fibrosis', range: `${s.eF3} - ${s.eF4 - 1} kPa`, className: 'severe', color: App.colors.coral };
+    return { code: 'F4', label: 'Cirrhosis', stage: 'Cirrhosis', range: `≥ ${s.eF4} kPa`, className: 'critical', color: App.colors.red };
   };
 
   App.classifyCap = function classifyCap(value) {
     const s = App.state.settings;
-    if (value === null) return { code: '—', label: 'Data unavailable', className: 'neutral', color: App.colors.slate };
+    if (value === null) return { code: '—', label: 'Data unavailable', range: 'Data unavailable', className: 'neutral', color: App.colors.slate };
     if (value <= s.capS0Max) return { code: 'S0', label: 'No Steatosis', liverFat: '< 10%', range: `≤ ${s.capS0Max} dB/m`, className: 'normal', color: App.colors.tealLight };
     if (value < s.capS1) return { code: '—', label: 'Outside Configured Range', liverFat: 'Unknown', range: `${s.capS0Max} - ${s.capS1}`, className: 'neutral', color: App.colors.slate };
     if (value < s.capS2) return { code: 'S1', label: 'Mild Steatosis', liverFat: '11 - 33%', range: `${s.capS1} - ${s.capS2 - 1} dB/m`, className: 'mild', color: App.colors.lime };
@@ -260,7 +260,7 @@
 
   App.classifyBMI = function classifyBMI(value) {
     const s = App.state.settings;
-    if (value === null) return { code: 'Unknown', label: 'Unknown' };
+    if (value === null) return { code: 'Unknown', label: 'Unknown', range: 'Data unavailable' };
     if (value < s.bmiNormalStart) return { code: '1', label: `Underweight (<${s.bmiNormalStart})` };
     if (value < s.bmiOverweightStart) return { code: '2', label: `Normal (${s.bmiNormalStart}-${s.bmiOverweightStart})` };
     if (value < s.bmiObesity1Start) return { code: '3', label: `Overweight (${s.bmiOverweightStart}-${s.bmiObesity1Start})` };

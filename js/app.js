@@ -382,6 +382,27 @@
     renderHealthCard(App.state.data[App.state.selectedPatientIndex]);
   }
 
+  function capGaugePosition(value, settings) {
+    if (value === null || !Number.isFinite(value)) return 0;
+
+    const clamp = position => Math.max(0, Math.min(98, position));
+    const interpolate = (current, start, end, bandStart) => {
+      const range = Math.max(1, end - start);
+      return bandStart + ((current - start) / range) * 25;
+    };
+
+    if (value <= settings.capS0Max) {
+      return clamp((Math.max(0, value) / Math.max(1, settings.capS0Max)) * 25);
+    }
+    if (value < settings.capS1) return 25;
+    if (value < settings.capS2) return clamp(interpolate(value, settings.capS1, settings.capS2, 25));
+    if (value < settings.capS3) return clamp(interpolate(value, settings.capS2, settings.capS3, 50));
+
+    // Reserve headroom in S3 while keeping unusually high CAP values inside the track.
+    const upperBound = Math.max(400, settings.capS3 + 100, value + 10);
+    return clamp(interpolate(value, settings.capS3, upperBound, 75));
+  }
+
   function renderHealthCard(patient) {
     if (!patient) return;
     const patientKey = App.getPatientKey(patient);
@@ -393,8 +414,23 @@
     const fibrosis = App.classifyFibrosis(patient.stiffness);
     const cap = App.classifyCap(patient.cap);
     const bmiGroup = App.classifyBMI(patient.bmi);
-    const fibrosisWidth = patient.stiffness === null ? 0 : Math.min(100, (patient.stiffness / Math.max(20, App.state.settings.eF4 * 1.35)) * 100);
-    const capWidth = patient.cap === null ? 0 : Math.min(100, (patient.cap / 400) * 100);
+    // Use one dynamic scale for the marker, colored bands, and centered labels.
+    // This keeps the gauge aligned when the clinical thresholds are changed in Settings.
+    const fibrosisScaleMax = Math.max(20, App.state.settings.eF4 * 1.35);
+    const toFibrosisPosition = (value) => Math.max(0, Math.min(100, (value / fibrosisScaleMax) * 100));
+    const fibrosisF2Position = toFibrosisPosition(App.state.settings.eF2);
+    const fibrosisF3Position = Math.max(fibrosisF2Position, toFibrosisPosition(App.state.settings.eF3));
+    const fibrosisF4Position = Math.max(fibrosisF3Position, toFibrosisPosition(App.state.settings.eF4));
+    const fibrosisBandWidths = [
+      fibrosisF2Position,
+      fibrosisF3Position - fibrosisF2Position,
+      fibrosisF4Position - fibrosisF3Position,
+      100 - fibrosisF4Position
+    ];
+    const fibrosisWidth = patient.stiffness === null ? 0 : toFibrosisPosition(patient.stiffness);
+    // CAP uses four equal clinical bands (S0-S3). The marker is interpolated
+    // within its actual threshold range so the numeric result and grade always agree.
+    const capWidth = capGaugePosition(patient.cap, App.state.settings);
     const riskText = App.isHighRisk(patient)
       ? 'One or more measurements meet the configured criteria for clinical assessment and follow-up.'
       : 'The available measurements do not meet the configured elevated-risk criteria.';
@@ -407,13 +443,13 @@
         <article class="metric-card fibrosis-metric">
           <div class="metric-heading"><span><img class="liver-icon liver-icon--metric" src="assets/liver-icon.svg" alt="" aria-hidden="true"></span><div><small>Liver Stiffness</small><strong>E Median</strong></div><b class="stage-pill ${fibrosis.className}">${fibrosis.code}</b></div>
           <div class="metric-number"><strong>${formatMetric(patient.stiffness, 1)}</strong><span>kPa</span></div>
-          <div class="gauge"><div class="gauge-track fibrosis-track"><i style="width:${fibrosisWidth}%"></i><b style="left:${Math.min(98, fibrosisWidth)}%"></b></div><div class="gauge-labels"><span>F0-F1 ≤ ${App.state.settings.eF01Max}</span><span>F2 ≥ ${App.state.settings.eF2}</span><span>F3 ≥ ${App.state.settings.eF3}</span><span>F4 ≥ ${App.state.settings.eF4}</span></div></div>
-          <p>Interpretation: <strong>${fibrosis.label} (${fibrosis.code})</strong></p>
+          <div class="gauge"><div class="gauge-track fibrosis-track" style="--f2-stop:${fibrosisF2Position}%;--f3-stop:${fibrosisF3Position}%;--f4-stop:${fibrosisF4Position}%"><i style="width:${fibrosisWidth}%"></i><b style="left:${Math.min(98, fibrosisWidth)}%"></b></div><div class="gauge-labels fibrosis-gauge-labels" style="grid-template-columns:${fibrosisBandWidths.map((width) => `${width}%`).join(' ')}"><span>F0-F1 ≤ ${App.state.settings.eF01Max}</span><span>F2 ≥ ${App.state.settings.eF2}</span><span>F3 ≥ ${App.state.settings.eF3}</span><span>F4 ≥ ${App.state.settings.eF4}</span></div></div>
+          <p>Interpretation: <strong>${fibrosis.label} (${fibrosis.code})</strong><br><small>Fibrosis range: ${fibrosis.range}</small></p>
         </article>
         <article class="metric-card cap-metric">
           <div class="metric-heading"><span><i class="fa-solid fa-droplet"></i></span><div><small>Hepatic Steatosis</small><strong>CAP Enhanced Mean</strong></div><b class="stage-pill ${cap.className}">${cap.code}</b></div>
           <div class="metric-number"><strong>${formatMetric(patient.cap, 0)}</strong><span>dB/m</span></div>
-          <div class="gauge"><div class="gauge-track cap-track"><i style="width:${capWidth}%"></i><b style="left:${Math.min(98, capWidth)}%"></b></div><div class="gauge-labels"><span>S0</span><span>S1 ≥ ${App.state.settings.capS1}</span><span>S2 ≥ ${App.state.settings.capS2}</span><span>S3 ≥ ${App.state.settings.capS3}</span></div></div>
+          <div class="gauge"><div class="gauge-track cap-track"><i style="width:${capWidth}%"></i><b style="left:${Math.min(98, capWidth)}%"></b></div><div class="gauge-labels cap-gauge-labels"><span>S0 ≤ ${App.state.settings.capS0Max}</span><span>S1 ≥ ${App.state.settings.capS1}</span><span>S2 ≥ ${App.state.settings.capS2}</span><span>S3 ≥ ${App.state.settings.capS3}</span></div></div>
           <p>Interpretation: <strong>${cap.label} (${cap.code}) · Estimated liver fat ${cap.liverFat}</strong><br><small>CAP range: ${cap.range}</small></p>
         </article>
       </div>
