@@ -84,7 +84,7 @@
     window.appData = combined;
     App.state.fileName = App.state.files.length === 1
       ? App.state.files[0].name
-      : `${App.state.files.length.toLocaleString('th-TH')} ไฟล์`;
+      : `${App.state.files.length.toLocaleString('en-US')} files`;
     App.state.tablePage = 1;
     if (!combined.length) App.state.selectedPatientIndex = null;
     else if (!combined[App.state.selectedPatientIndex]) App.state.selectedPatientIndex = 0;
@@ -95,7 +95,7 @@
     if (!files.length) return;
     const dropZone = $('#drop-zone');
     dropZone.classList.add('loading');
-    dropZone.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><strong>กำลังอ่าน ${files.length.toLocaleString('th-TH')} ไฟล์...</strong><span>ข้อมูลยังคงอยู่บนอุปกรณ์ของคุณ</span>`;
+    dropZone.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><strong>Reading ${files.length.toLocaleString('en-US')} files...</strong><span>Your data remains on this device.</span>`;
     const existingFingerprints = new Set(App.state.files.map(entry => entry.fingerprint));
     const errors = [];
     let addedFiles = 0;
@@ -103,16 +103,16 @@
     try {
       for (const file of files) {
         if (!/\.(xlsx|xls)$/i.test(file.name)) {
-          errors.push(`${file.name}: ไม่ใช่ไฟล์ Excel`);
+          errors.push(`${file.name}: unsupported file type`);
           continue;
         }
         if (file.size > App.MAX_FILE_SIZE) {
-          errors.push(`${file.name}: ขนาดเกิน 25 MB`);
+          errors.push(`${file.name}: file size exceeds 25 MB`);
           continue;
         }
         const fingerprint = fileFingerprint(file);
         if (existingFingerprints.has(fingerprint)) {
-          errors.push(`${file.name}: ไฟล์นี้ถูกนำเข้าแล้ว`);
+          errors.push(`${file.name}: this file has already been imported`);
           continue;
         }
         try {
@@ -127,7 +127,7 @@
           parsedRows += records.length;
           addedFiles += 1;
         } catch (error) {
-          errors.push(`${file.name}: ${error.message || 'อ่านข้อมูลไม่สำเร็จ'}`);
+          errors.push(`${file.name}: ${error.message || 'Unable to read the file'}`);
         }
       }
       if (addedFiles) {
@@ -137,11 +137,11 @@
         renderAll();
         navigate('overview');
         const duplicateRows = App.state.files.reduce((sum, entry) => sum + entry.duplicateCount, 0);
-        showToast(`เพิ่ม ${addedFiles} ไฟล์ · อ่าน ${parsedRows.toLocaleString('th-TH')} แถว${duplicateRows ? ` · ตัดข้อมูลซ้ำ ${duplicateRows.toLocaleString('th-TH')} แถว` : ''}`);
+        showToast(`Added ${addedFiles} file${addedFiles === 1 ? '' : 's'} · Read ${parsedRows.toLocaleString('en-US')} records${duplicateRows ? ` · Excluded ${duplicateRows.toLocaleString('en-US')} duplicate records` : ''}`);
       } else {
-        showToast(errors[0] || 'ไม่มีไฟล์ที่สามารถนำเข้าได้', 'error');
+        showToast(errors[0] || 'No valid files could be imported.', 'error');
       }
-      if (addedFiles && errors.length) setTimeout(() => showToast(`ข้าม ${errors.length} ไฟล์: ${errors[0]}`, 'error'), 3500);
+      if (addedFiles && errors.length) setTimeout(() => showToast(`Skipped ${errors.length} file${errors.length === 1 ? '' : 's'}: ${errors[0]}`, 'error'), 3500);
     } finally {
       resetDropZone();
       $('#excel-input').value = '';
@@ -153,9 +153,9 @@
     dropZone.classList.remove('loading', 'drag-over');
     dropZone.innerHTML = `
       <i class="fa-solid fa-cloud-arrow-up"></i>
-      <strong>ลากไฟล์หนึ่งไฟล์หรือหลายไฟล์มาวางที่นี่</strong>
-      <span>หรือคลิกเพื่อเลือกหลายไฟล์จากเครื่อง</span>
-      <small>.XLSX, .XLS · สูงสุดไฟล์ละ 25 MB</small>`;
+      <strong>Drag one or more Excel files here</strong>
+      <span>or click to select files from your device</span>
+      <small>.XLSX, .XLS · Maximum 25 MB per file</small>`;
   }
 
   function resetData() {
@@ -168,7 +168,7 @@
     App.state.charts = {};
     renderAll();
     navigate('overview');
-    showToast('ล้างข้อมูลออกจากหน่วยความจำแล้ว');
+    showToast('Patient data has been cleared from browser memory.');
   }
 
   function removeFile(fileId) {
@@ -178,7 +178,7 @@
     rebuildCombinedData();
     renderAll();
     if (!App.state.data.length) navigate('overview');
-    showToast(`นำไฟล์ ${entry.name} ออกจากการวิเคราะห์แล้ว`);
+    showToast(`${entry.name} has been removed from the analysis.`);
   }
 
   function renderAll() {
@@ -212,12 +212,12 @@
   function renderFileManager() {
     const files = App.state.files;
     const duplicateRows = files.reduce((sum, file) => sum + file.duplicateCount, 0);
-    $('#file-manager-summary').textContent = `${files.length.toLocaleString('th-TH')} ไฟล์ · ${App.state.data.length.toLocaleString('th-TH')} ครั้งตรวจ · ${App.getUniquePatientCount().toLocaleString('th-TH')} ผู้ป่วยไม่ซ้ำ${duplicateRows ? ` · ตัดข้อมูลซ้ำ ${duplicateRows.toLocaleString('th-TH')} แถว` : ''}`;
+    $('#file-manager-summary').textContent = `${files.length.toLocaleString('en-US')} files · ${App.state.data.length.toLocaleString('en-US')} examinations · ${App.getUniquePatientCount().toLocaleString('en-US')} unique patients${duplicateRows ? ` · ${duplicateRows.toLocaleString('en-US')} duplicate records excluded` : ''}`;
     $('#file-manager-list').innerHTML = files.map(file => `
       <div class="file-entry">
         <i class="fa-regular fa-file-excel"></i>
-        <div><strong title="${escapeHTML(file.name)}">${escapeHTML(file.name)}</strong><small>${file.activeCount.toLocaleString('th-TH')} รายการ${file.duplicateCount ? ` · ซ้ำ ${file.duplicateCount.toLocaleString('th-TH')}` : ''}</small></div>
-        <button class="file-remove" type="button" data-remove-file="${file.id}" aria-label="นำไฟล์ ${escapeHTML(file.name)} ออก"><i class="fa-solid fa-xmark"></i></button>
+        <div><strong title="${escapeHTML(file.name)}">${escapeHTML(file.name)}</strong><small>${file.activeCount.toLocaleString('en-US')} records${file.duplicateCount ? ` · ${file.duplicateCount.toLocaleString('en-US')} duplicates` : ''}</small></div>
+        <button class="file-remove" type="button" data-remove-file="${file.id}" aria-label="Remove ${escapeHTML(file.name)}"><i class="fa-solid fa-xmark"></i></button>
       </div>`).join('');
   }
 
@@ -228,25 +228,25 @@
     const highRisk = liverData.filter(App.isHighRisk);
     const averageBMI = App.average(data.map(patient => patient.bmi));
     const averageCAP = App.average(data.map(patient => patient.cap));
-    const complete = data.filter(patient => patient.height !== null && patient.weight !== null && patient.bmi !== null && patient.waist !== null && patient.gender !== 'ไม่ระบุ').length;
-    $('#kpi-total').textContent = App.getUniquePatientCount(allExams).toLocaleString('th-TH');
-    $('#kpi-exams').textContent = allExams.length.toLocaleString('th-TH');
-    $('#kpi-files').textContent = `จาก ${App.state.files.length.toLocaleString('th-TH')} ไฟล์ · มุมมอง${App.state.analysisMode === 'latest' ? 'ผลล่าสุด' : 'ทุกรอบตรวจ'}`;
+    const complete = data.filter(patient => patient.height !== null && patient.weight !== null && patient.bmi !== null && patient.waist !== null && patient.gender !== 'Unspecified').length;
+    $('#kpi-total').textContent = App.getUniquePatientCount(allExams).toLocaleString('en-US');
+    $('#kpi-exams').textContent = allExams.length.toLocaleString('en-US');
+    $('#kpi-files').textContent = `${App.state.files.length.toLocaleString('en-US')} files · ${App.state.analysisMode === 'latest' ? 'Latest result view' : 'All examinations view'}`;
     $('#kpi-complete').textContent = complete === data.length
-      ? 'ข้อมูลประกอบครบถ้วนทุกราย'
-      : complete === 0 ? 'รูปแบบตรวจพื้นฐาน · ข้อมูลประกอบไม่ครบ' : `ข้อมูลประกอบครบ ${complete} จาก ${data.length} ครั้งตรวจในมุมมอง`;
+      ? 'Complete anthropometric data for all examinations'
+      : complete === 0 ? 'Basic liver assessment · Anthropometric data unavailable' : `Complete anthropometric data for ${complete} of ${data.length} examinations`;
     $('#kpi-risk').textContent = liverData.length ? `${Math.round((highRisk.length / liverData.length) * 100)}%` : '—';
-    $('#kpi-risk-count').textContent = liverData.length ? `${highRisk.length.toLocaleString('th-TH')} รายที่ควรติดตาม` : 'ข้อมูล E/CAP ไม่ครบถ้วน';
+    $('#kpi-risk-count').textContent = liverData.length ? `${highRisk.length.toLocaleString('en-US')} examinations meeting follow-up criteria` : 'E Median/CAP data unavailable';
     $('#kpi-bmi').textContent = averageBMI === null ? '—' : averageBMI.toFixed(1);
-    $('#kpi-bmi-label').textContent = averageBMI === null ? 'ยังไม่มีข้อมูล' : averageBMI < 23 ? 'อยู่ในเกณฑ์ทั่วไป' : averageBMI < 25 ? 'เริ่มมีภาวะน้ำหนักเกิน' : 'ค่าเฉลี่ยอยู่ในกลุ่มอ้วน';
+    $('#kpi-bmi-label').textContent = averageBMI === null ? 'No BMI data available' : averageBMI < 23 ? 'Mean within the normal category' : averageBMI < 25 ? 'Mean within the overweight category' : 'Mean within an obesity category';
     $('#kpi-cap').textContent = averageCAP === null ? '—' : Math.round(averageCAP);
-    $('#kpi-cap-label').textContent = averageCAP === null ? 'ยังไม่มีข้อมูล' : `ภาพรวมอยู่ระดับ ${App.classifyCap(averageCAP).code}`;
+    $('#kpi-cap-label').textContent = averageCAP === null ? 'No CAP data available' : `Cohort mean corresponds to ${App.classifyCap(averageCAP).code}`;
 
     const dates = data.map(patient => patient.date).filter(Boolean).sort((a, b) => a - b);
     $('#dataset-date-range').innerHTML = dates.length
       ? `<i class="fa-regular fa-calendar"></i> ${App.formatDate(dates[0])} – ${App.formatDate(dates.at(-1))}`
-      : '<i class="fa-regular fa-calendar"></i> ไม่ระบุช่วงวันที่';
-    $('#dataset-updated').innerHTML = `<i class="fa-regular fa-clock"></i> วิเคราะห์เมื่อ ${new Intl.DateTimeFormat('th-TH', { hour: '2-digit', minute: '2-digit' }).format(new Date())} น.`;
+      : '<i class="fa-regular fa-calendar"></i> Examination date unavailable';
+    $('#dataset-updated').innerHTML = `<i class="fa-regular fa-clock"></i> Analysed at ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(new Date())}`;
   }
 
   function renderDataQuality() {
@@ -255,11 +255,11 @@
     const fieldChecks = [
       { label: 'E Median', missing: data.filter(p => p.stiffness === null).length },
       { label: 'CAP Enhanced Mean', missing: data.filter(p => p.cap === null).length },
-      { label: 'ส่วนสูง', missing: data.filter(p => p.height === null).length },
-      { label: 'น้ำหนัก', missing: data.filter(p => p.weight === null).length },
+      { label: 'Height', missing: data.filter(p => p.height === null).length },
+      { label: 'Weight', missing: data.filter(p => p.weight === null).length },
       { label: 'BMI', missing: data.filter(p => p.bmi === null).length },
-      { label: 'รอบเอว', missing: data.filter(p => p.waist === null).length },
-      { label: 'เพศ', missing: data.filter(p => p.gender === 'ไม่ระบุ').length }
+      { label: 'Waist Circumference', missing: data.filter(p => p.waist === null).length },
+      { label: 'Sex', missing: data.filter(p => p.gender === 'Unspecified').length }
     ];
     const incomplete = fieldChecks.filter(field => field.missing > 0);
     const dashboardBanner = $('#data-quality-banner');
@@ -269,8 +269,8 @@
       analysisBanner.classList.add('hidden');
       return;
     }
-    const missingText = incomplete.map(field => `${field.label} ${field.missing} ราย`).join(' · ');
-    const bannerHTML = `<i class="fa-solid fa-circle-info"></i><div><strong>ข้อมูลของผู้รับการตรวจไม่ครบถ้วน</strong><p>บางไฟล์อาจเป็นการตรวจตับแบบพื้นฐาน จึงแสดงเฉพาะผลที่มีข้อมูลรองรับ ส่วน KPI และการวิเคราะห์ที่ต้องใช้ข้อมูลประกอบจะแสดงเป็นค่าว่าง · ข้อมูลที่ขาด: ${missingText}</p></div>`;
+    const missingText = incomplete.map(field => `${field.label}: ${field.missing}`).join(' · ');
+    const bannerHTML = `<i class="fa-solid fa-circle-info"></i><div><strong>Incomplete examination data</strong><p>Some files may contain a basic liver assessment only. Results are displayed only when the required measurements are available; dependent KPIs and analyses remain blank. Missing values: ${missingText}</p></div>`;
     dashboardBanner.innerHTML = bannerHTML;
     analysisBanner.innerHTML = bannerHTML;
     dashboardBanner.classList.remove('hidden');
@@ -280,9 +280,9 @@
   function riskBadge(patient) {
     const fibrosis = App.classifyFibrosis(patient.stiffness);
     const cap = App.classifyCap(patient.cap);
-    if (App.isHighRisk(patient)) return `<span class="risk-badge high"><i></i>เสี่ยงสูง · ${fibrosis.code}/${cap.code}</span>`;
-    if (fibrosis.code === 'F2' || cap.code === 'S2') return `<span class="risk-badge medium"><i></i>เฝ้าระวัง · ${fibrosis.code}/${cap.code}</span>`;
-    return `<span class="risk-badge low"><i></i>ความเสี่ยงต่ำ · ${fibrosis.code}/${cap.code}</span>`;
+    if (App.isHighRisk(patient)) return `<span class="risk-badge high"><i></i>Elevated Risk · ${fibrosis.code}/${cap.code}</span>`;
+    if (fibrosis.code === 'F2' || cap.code === 'S2') return `<span class="risk-badge medium"><i></i>Clinical Follow-up · ${fibrosis.code}/${cap.code}</span>`;
+    return `<span class="risk-badge low"><i></i>Lower Risk · ${fibrosis.code}/${cap.code}</span>`;
   }
 
   function renderOverviewTable() {
@@ -296,16 +296,16 @@
     $('#overview-table-body').innerHTML = pageData.length ? pageData.map((patient, index) => `
       <tr data-patient-index="${App.state.data.indexOf(patient)}">
         <td><strong class="patient-id-cell">${escapeHTML(patient.id)}</strong></td>
-        <td><div class="person-cell"><span>${escapeHTML(initials(patient.name))}</span><div><strong class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</strong><small>${patient.nameMissing ? 'ตรวจไม่พบคอลัมน์ชื่อในไฟล์' : 'ชื่อผู้รับการตรวจ'}</small></div></div></td>
+        <td><div class="person-cell"><span>${escapeHTML(initials(patient.name))}</span><div><strong class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</strong><small>${patient.nameMissing ? 'Name fields not found in source file' : 'Patient name'}</small></div></div></td>
         <td>${App.formatDate(patient.date)}<br><small>${escapeHTML(patient.sourceFile || '')}</small></td>
         <td>${escapeHTML(patient.gender)}</td>
         <td>${formatMetric(patient.bmi, 1)}</td>
         <td><strong>${formatMetric(patient.cap, 0)}</strong> <small>dB/m</small></td>
         <td><strong>${formatMetric(patient.stiffness, 1)}</strong> <small>kPa</small></td>
         <td>${riskBadge(patient)}</td>
-      </tr>`).join('') : '<tr><td colspan="8" class="empty-row">ไม่พบข้อมูลที่ตรงกับคำค้นหา</td></tr>';
-    $('#table-count-label').textContent = `แสดง ${filtered.length.toLocaleString('th-TH')} จาก ${analysisData.length.toLocaleString('th-TH')} ครั้งตรวจในมุมมอง`;
-    $('#table-page-label').textContent = `หน้า ${App.state.tablePage} / ${totalPages}`;
+      </tr>`).join('') : '<tr><td colspan="8" class="empty-row">No records match your search.</td></tr>';
+    $('#table-count-label').textContent = `Showing ${filtered.length.toLocaleString('en-US')} of ${analysisData.length.toLocaleString('en-US')} examinations in this view`;
+    $('#table-page-label').textContent = `Page ${App.state.tablePage} / ${totalPages}`;
     $('#table-prev').disabled = App.state.tablePage <= 1;
     $('#table-next').disabled = App.state.tablePage >= totalPages;
   }
@@ -313,7 +313,7 @@
   function renderDateFilter() {
     const selected = $('#date-filter').value;
     const dates = [...new Set(App.state.data.map(patient => App.toISODate(patient.date)).filter(Boolean))].sort().reverse();
-    $('#date-filter').innerHTML = '<option value="">ทุกวันที่</option>' + dates.map(date => {
+    $('#date-filter').innerHTML = '<option value="">All Dates</option>' + dates.map(date => {
       const source = App.state.data.find(patient => App.toISODate(patient.date) === date).date;
       return `<option value="${date}">${App.formatDate(source, 'long')}</option>`;
     }).join('');
@@ -349,11 +349,11 @@
       const bTime = b.date instanceof Date ? b.date.valueOf() : -1;
       return bTime - aTime || App.state.data.indexOf(b) - App.state.data.indexOf(a);
     }));
-    $('#patient-result-count').textContent = `${groups.length.toLocaleString('th-TH')} คน · ${filtered.length.toLocaleString('th-TH')} ครั้งตรวจ`;
+    $('#patient-result-count').textContent = `${groups.length.toLocaleString('en-US')} patients · ${filtered.length.toLocaleString('en-US')} examinations`;
 
     if (!groups.length) {
-      $('#patient-list').innerHTML = '<div class="list-empty"><i class="fa-solid fa-magnifying-glass"></i><p>ไม่พบรายชื่อที่ตรงกับตัวกรอง</p></div>';
-      $('#health-card').innerHTML = '<div class="health-empty"><i class="fa-regular fa-address-card"></i><h3>เลือกรายชื่อเพื่อดูผล</h3></div>';
+      $('#patient-list').innerHTML = '<div class="list-empty"><i class="fa-solid fa-magnifying-glass"></i><p>No patients match the selected filters.</p></div>';
+      $('#health-card').innerHTML = '<div class="health-empty"><i class="fa-regular fa-address-card"></i><h3>Select a patient to view results</h3></div>';
       return;
     }
 
@@ -372,9 +372,9 @@
       return `<button type="button" class="patient-list-item ${App.getPatientKey(patient) === activeKey ? 'selected' : ''}" data-select-patient="${index}">
         <span class="patient-avatar">${escapeHTML(initials(patient.name))}</span>
         <span class="patient-list-info">
-          <small class="patient-id-line">รหัส ${escapeHTML(patient.id)}</small>
+          <small class="patient-id-line">Reference ID ${escapeHTML(patient.id)}</small>
           <strong class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</strong>
-          <small>ล่าสุด ${App.formatDate(patient.date)} · ${visits.length.toLocaleString('th-TH')} รอบ</small>
+          <small>Latest ${App.formatDate(patient.date)} · ${visits.length.toLocaleString('en-US')} visits</small>
         </span>
         <span class="patient-badges"><span class="stage-pill ${fibrosisStage.className}">${fibrosisStage.code}</span><span class="stage-pill ${steatosisStage.className}">${steatosisStage.code}</span></span>
       </button>`;
@@ -396,45 +396,45 @@
     const fibrosisWidth = patient.stiffness === null ? 0 : Math.min(100, (patient.stiffness / Math.max(20, App.state.settings.eF4 * 1.35)) * 100);
     const capWidth = patient.cap === null ? 0 : Math.min(100, (patient.cap / 400) * 100);
     const riskText = App.isHighRisk(patient)
-      ? 'ผลอยู่ในช่วงที่ควรได้รับการประเมินและติดตามโดยบุคลากรทางการแพทย์'
-      : 'ผลโดยรวมยังไม่เข้าเกณฑ์ความเสี่ยงสูงตามค่าที่ตั้งไว้';
+      ? 'One or more measurements meet the configured criteria for clinical assessment and follow-up.'
+      : 'The available measurements do not meet the configured elevated-risk criteria.';
     $('#health-card').innerHTML = `
       <div class="health-header">
-        <div class="health-person"><span>${escapeHTML(initials(patient.name))}</span><div class="health-identity"><p>ผลการตรวจรายบุคคล</p><div class="identity-row"><small>รหัสผู้รับการตรวจ</small><strong>${escapeHTML(patient.id)}</strong></div><div class="identity-row patient-name-row"><small>ชื่อผู้รับการตรวจ</small><h2 class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</h2></div><small>ตรวจเมื่อ ${App.formatDate(patient.date, 'long')} · ไฟล์ ${escapeHTML(patient.sourceFile || 'ไม่ระบุ')}</small></div></div>
-        <div class="health-header-actions">${riskBadge(patient)}<button type="button" class="btn btn-secondary btn-patient-pdf" data-export-patient="${App.state.data.indexOf(patient)}"><i class="fa-solid fa-file-pdf"></i> ส่งออก PDF รายบุคคล</button></div>
+        <div class="health-person"><span>${escapeHTML(initials(patient.name))}</span><div class="health-identity"><p>Individual FibroScan Result</p><div class="identity-row"><small>Reference ID</small><strong>${escapeHTML(patient.id)}</strong></div><div class="identity-row patient-name-row"><small>Patient Name</small><h2 class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</h2></div><small>Examined on ${App.formatDate(patient.date, 'long')} · Source file: ${escapeHTML(patient.sourceFile || 'Not specified')}</small></div></div>
+        <div class="health-header-actions">${riskBadge(patient)}<button type="button" class="btn btn-secondary btn-patient-pdf" data-export-patient="${App.state.data.indexOf(patient)}"><i class="fa-solid fa-file-pdf"></i> Export Individual PDF</button></div>
       </div>
       <div class="health-metrics">
         <article class="metric-card fibrosis-metric">
-          <div class="metric-heading"><span><img class="liver-icon liver-icon--metric" src="assets/liver-icon.svg" alt="" aria-hidden="true"></span><div><small>ความแข็งของตับ</small><strong>E (kPa)</strong></div><b class="stage-pill ${fibrosis.className}">${fibrosis.code}</b></div>
+          <div class="metric-heading"><span><img class="liver-icon liver-icon--metric" src="assets/liver-icon.svg" alt="" aria-hidden="true"></span><div><small>Liver Stiffness</small><strong>E Median</strong></div><b class="stage-pill ${fibrosis.className}">${fibrosis.code}</b></div>
           <div class="metric-number"><strong>${formatMetric(patient.stiffness, 1)}</strong><span>kPa</span></div>
           <div class="gauge"><div class="gauge-track fibrosis-track"><i style="width:${fibrosisWidth}%"></i><b style="left:${Math.min(98, fibrosisWidth)}%"></b></div><div class="gauge-labels"><span>F0-F1 ≤ ${App.state.settings.eF01Max}</span><span>F2 ≥ ${App.state.settings.eF2}</span><span>F3 ≥ ${App.state.settings.eF3}</span><span>F4 ≥ ${App.state.settings.eF4}</span></div></div>
-          <p>แปลผล: <strong>${fibrosis.label} (${fibrosis.code})</strong></p>
+          <p>Interpretation: <strong>${fibrosis.label} (${fibrosis.code})</strong></p>
         </article>
         <article class="metric-card cap-metric">
-          <div class="metric-heading"><span><i class="fa-solid fa-droplet"></i></span><div><small>ปริมาณไขมันในตับ</small><strong>Mean CAP</strong></div><b class="stage-pill ${cap.className}">${cap.code}</b></div>
+          <div class="metric-heading"><span><i class="fa-solid fa-droplet"></i></span><div><small>Hepatic Steatosis</small><strong>CAP Enhanced Mean</strong></div><b class="stage-pill ${cap.className}">${cap.code}</b></div>
           <div class="metric-number"><strong>${formatMetric(patient.cap, 0)}</strong><span>dB/m</span></div>
           <div class="gauge"><div class="gauge-track cap-track"><i style="width:${capWidth}%"></i><b style="left:${Math.min(98, capWidth)}%"></b></div><div class="gauge-labels"><span>S0</span><span>S1 ≥ ${App.state.settings.capS1}</span><span>S2 ≥ ${App.state.settings.capS2}</span><span>S3 ≥ ${App.state.settings.capS3}</span></div></div>
-          <p>แปลผล: <strong>${cap.label} (${cap.code}) · ไขมันในตับ ${cap.liverFat}</strong><br><small>ช่วงค่า ${cap.range}</small></p>
+          <p>Interpretation: <strong>${cap.label} (${cap.code}) · Estimated liver fat ${cap.liverFat}</strong><br><small>CAP range: ${cap.range}</small></p>
         </article>
       </div>
       <div class="supporting-metrics">
-        <div><span><i class="fa-solid fa-weight-scale"></i></span><p>BMI (คำนวณ)<strong>${formatMetric(patient.bmi, 1)} <small>kg/m²</small></strong><small>${bmiGroup.label}</small></p></div>
-        <div><span><i class="fa-solid fa-arrows-up-down"></i></span><p>ส่วนสูง<strong>${formatMetric(patient.height, 1)} <small>cm</small></strong></p></div>
-        <div><span><i class="fa-solid fa-weight-hanging"></i></span><p>น้ำหนัก<strong>${formatMetric(patient.weight, 1)} <small>kg</small></strong></p></div>
-        <div><span><i class="fa-solid fa-ruler"></i></span><p>รอบเอว<strong>${formatMetric(patient.waist, 1)} <small>cm</small></strong><small>${App.isHighWaist(patient) === null ? 'ข้อมูลไม่พอจัดกลุ่ม' : App.isHighWaist(patient) ? 'รอบเอวสูง' : 'รอบเอวไม่สูง'}</small></p></div>
-        <div><span><i class="fa-solid fa-venus-mars"></i></span><p>เพศ<strong>${escapeHTML(patient.gender)}</strong></p></div>
-        <div><span><i class="fa-solid fa-user-doctor"></i></span><p>ผู้ตรวจ<strong>${escapeHTML(patient.examiner)}</strong></p></div>
+        <div><span><i class="fa-solid fa-weight-scale"></i></span><p>Calculated BMI<strong>${formatMetric(patient.bmi, 1)} <small>kg/m²</small></strong><small>${bmiGroup.label}</small></p></div>
+        <div><span><i class="fa-solid fa-arrows-up-down"></i></span><p>Height<strong>${formatMetric(patient.height, 1)} <small>cm</small></strong></p></div>
+        <div><span><i class="fa-solid fa-weight-hanging"></i></span><p>Weight<strong>${formatMetric(patient.weight, 1)} <small>kg</small></strong></p></div>
+        <div><span><i class="fa-solid fa-ruler"></i></span><p>Waist Circumference<strong>${formatMetric(patient.waist, 1)} <small>cm</small></strong><small>${App.isHighWaist(patient) === null ? 'Classification unavailable' : App.isHighWaist(patient) ? 'Elevated waist circumference' : 'Below elevated threshold'}</small></p></div>
+        <div><span><i class="fa-solid fa-venus-mars"></i></span><p>Sex<strong>${escapeHTML(patient.gender)}</strong></p></div>
+        <div><span><i class="fa-solid fa-user-doctor"></i></span><p>Examiner<strong>${escapeHTML(patient.examiner)}</strong></p></div>
       </div>
       <section class="patient-history">
-        <div class="patient-history-head"><h3>ประวัติการตรวจทั้งหมด</h3><span>${visits.length.toLocaleString('th-TH')} รอบตรวจ</span></div>
+        <div class="patient-history-head"><h3>Longitudinal Examination History</h3><span>${visits.length.toLocaleString('en-US')} examinations</span></div>
         <div class="patient-history-list">${visits.map(visit => {
           const index = App.state.data.indexOf(visit);
           const visitFibrosis = App.classifyFibrosis(visit.stiffness);
           const visitCap = App.classifyCap(visit.cap);
-          return `<button type="button" class="history-visit ${visit === patient ? 'active' : ''}" data-select-visit="${index}"><span><strong>${App.formatDate(visit.date, 'long')}</strong><small>${escapeHTML(visit.sourceFile || 'ไม่ระบุไฟล์')}</small></span><b>${visitFibrosis.code}</b><b>${visitCap.code}</b><span>E ${formatMetric(visit.stiffness, 1)} · CAP ${formatMetric(visit.cap, 0)}</span></button>`;
+          return `<button type="button" class="history-visit ${visit === patient ? 'active' : ''}" data-select-visit="${index}"><span><strong>${App.formatDate(visit.date, 'long')}</strong><small>${escapeHTML(visit.sourceFile || 'Source file not specified')}</small></span><b>${visitFibrosis.code}</b><b>${visitCap.code}</b><span>E ${formatMetric(visit.stiffness, 1)} · CAP ${formatMetric(visit.cap, 0)}</span></button>`;
         }).join('')}</div>
       </section>
-      <div class="interpretation ${App.isHighRisk(patient) ? 'warning' : ''}"><i class="fa-solid ${App.isHighRisk(patient) ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><div><strong>สรุปเบื้องต้น</strong><p>${riskText} ผลนี้ไม่ใช่การวินิจฉัยและควรแปลผลร่วมกับข้อมูลทางคลินิกอื่น</p></div></div>`;
+      <div class="interpretation ${App.isHighRisk(patient) ? 'warning' : ''}"><i class="fa-solid ${App.isHighRisk(patient) ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><div><strong>Preliminary Interpretation</strong><p>${riskText} This result is not a diagnosis and must be interpreted alongside other clinical information.</p></div></div>`;
   }
 
   function pearsonCorrelation(points) {
@@ -456,28 +456,28 @@
   function renderInsights() {
     const data = App.getAnalysisData();
     if (!data.length) return;
-    const maleCap = App.average(data.filter(p => p.gender === 'ชาย').map(p => p.cap));
-    const femaleCap = App.average(data.filter(p => p.gender === 'หญิง').map(p => p.cap));
+    const maleCap = App.average(data.filter(p => p.gender === 'Male').map(p => p.cap));
+    const femaleCap = App.average(data.filter(p => p.gender === 'Female').map(p => p.cap));
     const paired = data.filter(p => p.bmi !== null && p.cap !== null).map(p => ({ x: p.bmi, y: p.cap }));
     const correlation = pearsonCorrelation(paired);
     const largeWaist = data.filter(p => App.isHighWaist(p) === true);
     const largeWaistRisk = largeWaist.length ? Math.round((largeWaist.filter(App.isHighRisk).length / largeWaist.length) * 100) : null;
     const highRiskPercent = Math.round((data.filter(App.isHighRisk).length / data.length) * 100);
-    let genderText = 'ข้อมูลเพศยังไม่เพียงพอสำหรับการเปรียบเทียบ';
+    let genderText = 'Insufficient sex-specific data for comparison.';
     if (maleCap !== null && femaleCap !== null && femaleCap !== 0) {
       const difference = ((maleCap - femaleCap) / femaleCap) * 100;
-      genderText = `กลุ่มชายมี Mean CAP เฉลี่ย${difference >= 0 ? 'สูงกว่า' : 'ต่ำกว่า'}กลุ่มหญิง ${Math.abs(difference).toFixed(1)}%`;
+      genderText = `Mean CAP was ${Math.abs(difference).toFixed(1)}% ${difference >= 0 ? 'higher' : 'lower'} in males than in females.`;
     }
-    let correlationText = 'ข้อมูล BMI และ CAP ยังไม่เพียงพอสำหรับหาความสัมพันธ์';
+    let correlationText = 'Insufficient paired BMI and CAP data to estimate correlation.';
     if (correlation !== null) {
-      const strength = Math.abs(correlation) >= .7 ? 'ค่อนข้างสูง' : Math.abs(correlation) >= .4 ? 'ปานกลาง' : 'ค่อนข้างต่ำ';
-      correlationText = `BMI กับ Mean CAP มีความสัมพันธ์${correlation >= 0 ? 'เชิงบวก' : 'เชิงลบ'}ระดับ${strength} (r = ${correlation.toFixed(2)})`;
+      const strength = Math.abs(correlation) >= .7 ? 'strong' : Math.abs(correlation) >= .4 ? 'moderate' : 'weak';
+      correlationText = `BMI and Mean CAP showed a ${strength} ${correlation >= 0 ? 'positive' : 'negative'} correlation (r = ${correlation.toFixed(2)}).`;
     }
     const insights = [
-      { icon: 'fa-venus-mars', title: 'ความแตกต่างตามเพศ', text: genderText },
-      { icon: 'fa-chart-simple', title: 'BMI และไขมันในตับ', text: correlationText },
-      { icon: 'fa-ruler', title: 'ผลในกลุ่มรอบเอวสูง', text: largeWaistRisk === null ? 'ข้อมูลรอบเอวและเพศยังไม่เพียงพอ' : `กลุ่มรอบเอวสูงตามเกณฑ์ชาย ≥ ${App.state.settings.waistMaleHigh} / หญิง ≥ ${App.state.settings.waistFemaleHigh} cm อยู่ในกลุ่มเสี่ยงสูง ${largeWaistRisk}%` },
-      { icon: 'fa-user-shield', title: 'ภาพรวมความเสี่ยง', text: `ผู้รับการตรวจ ${highRiskPercent}% เข้าเกณฑ์เสี่ยงสูงจาก E หรือ Mean CAP` }
+      { icon: 'fa-venus-mars', title: 'Difference by Sex', text: genderText },
+      { icon: 'fa-chart-simple', title: 'BMI and Hepatic Steatosis', text: correlationText },
+      { icon: 'fa-ruler', title: 'Elevated Waist Circumference', text: largeWaistRisk === null ? 'Insufficient waist circumference and sex data for classification.' : `${largeWaistRisk}% of examinations with elevated waist circumference (male ≥ ${App.state.settings.waistMaleHigh} cm; female ≥ ${App.state.settings.waistFemaleHigh} cm) met the elevated-risk criteria.` },
+      { icon: 'fa-user-shield', title: 'Overall Risk Profile', text: `${highRiskPercent}% of examinations met the elevated-risk criteria based on E Median or Mean CAP.` }
     ];
     $('#insight-list').innerHTML = insights.map((item, index) => `<div class="insight-item"><span>0${index + 1}</span><i class="fa-solid ${item.icon}"></i><div><strong>${item.title}</strong><p>${item.text}</p></div></div>`).join('');
   }
@@ -487,17 +487,17 @@
     const factors = App.getRiskFactorAnalysis(App.getAnalysisData());
     const lookup = key => factors.find(group => group.key === key);
     const comparisons = [
-      { title: 'BMI อ้วนระดับ 2 เทียบกลุ่มปกติ', icon: 'fa-weight-scale', high: lookup('bmi-obese-2'), reference: lookup('bmi-normal') },
-      { title: 'รอบเอวสูง เทียบรอบเอวไม่สูง', icon: 'fa-ruler', high: lookup('waist-high'), reference: lookup('waist-normal') },
-      { title: 'เพศชาย เทียบเพศหญิง', icon: 'fa-venus-mars', high: lookup('gender-male'), reference: lookup('gender-female') }
+      { title: 'Obesity Class II vs. Normal BMI', icon: 'fa-weight-scale', high: lookup('bmi-obese-2'), reference: lookup('bmi-normal') },
+      { title: 'Elevated vs. Lower Waist Circumference', icon: 'fa-ruler', high: lookup('waist-high'), reference: lookup('waist-normal') },
+      { title: 'Male vs. Female', icon: 'fa-venus-mars', high: lookup('gender-male'), reference: lookup('gender-female') }
     ];
     $('#risk-factor-summary').innerHTML = comparisons.map(item => {
       const fibrosisDiff = App.percentagePointDifference(item.high, item.reference, 'fibrosisRate');
       const steatosisDiff = App.percentagePointDifference(item.high, item.reference, 'steatosisRate');
-      const formatDiff = value => value === null ? 'ข้อมูลไม่พอ' : `${value >= 0 ? '+' : ''}${value.toFixed(1)} จุดเปอร์เซ็นต์`;
+      const formatDiff = value => value === null ? 'Insufficient data' : `${value >= 0 ? '+' : ''}${value.toFixed(1)} percentage points`;
       return `<article class="factor-summary-card">
         <span><i class="fa-solid ${item.icon}"></i></span>
-        <div><strong>${item.title}</strong><small>จำนวน ${item.high?.count || 0} เทียบ ${item.reference?.count || 0} ราย</small>
+        <div><strong>${item.title}</strong><small>Sample sizes: ${item.high?.count || 0} vs. ${item.reference?.count || 0}</small>
           <p><b>Fibrosis ≥ F2</b><em class="${fibrosisDiff !== null && fibrosisDiff > 0 ? 'higher' : ''}">${formatDiff(fibrosisDiff)}</em></p>
           <p><b>Steatosis ≥ S1</b><em class="${steatosisDiff !== null && steatosisDiff > 0 ? 'higher' : ''}">${formatDiff(steatosisDiff)}</em></p>
         </div>
@@ -528,52 +528,52 @@
     const values = Object.fromEntries(new FormData(event.currentTarget).entries());
     const settings = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, Number(value)]));
     if (!(settings.capS0Max < settings.capS1 && settings.capS1 < settings.capS2 && settings.capS2 < settings.capS3)) {
-      showToast('เกณฑ์ CAP ต้องเรียงจาก S0 สูงสุด น้อยกว่า S1, S2 และ S3', 'error');
+      showToast('CAP thresholds must increase sequentially from the S0 maximum through S1, S2, and S3.', 'error');
       return;
     }
     if (!(settings.eF01Max < settings.eF2 && settings.eF2 < settings.eF3 && settings.eF3 < settings.eF4)) {
-      showToast('เกณฑ์ E ต้องเรียงจาก F0-F1 สูงสุด น้อยกว่า F2, F3 และ F4', 'error');
+      showToast('Liver stiffness thresholds must increase sequentially from the F0-F1 maximum through F2, F3, and F4.', 'error');
       return;
     }
     if (!(settings.bmiNormalStart < settings.bmiOverweightStart && settings.bmiOverweightStart < settings.bmiObesity1Start && settings.bmiObesity1Start < settings.bmiObesity2Start)) {
-      showToast('เกณฑ์ BMI ต้องเรียงจากกลุ่มปกติ น้ำหนักเกิน อ้วนระดับ 1 และอ้วนระดับ 2', 'error');
+      showToast('BMI thresholds must increase sequentially from Normal through Overweight, Obesity Class I, and Obesity Class II.', 'error');
       return;
     }
     if (!(settings.waistMaleHigh > 0 && settings.waistFemaleHigh > 0)) {
-      showToast('เกณฑ์รอบเอวชายและหญิงต้องมากกว่า 0', 'error');
+      showToast('Male and female waist circumference thresholds must be greater than zero.', 'error');
       return;
     }
     App.saveSettings(settings);
     fillSettingsForm();
     renderAll();
-    showToast('บันทึกเกณฑ์และคำนวณผลใหม่แล้ว');
+    showToast('Thresholds saved and all results recalculated.');
   }
 
   function downloadTemplate() {
     if (!window.XLSX) {
-      showToast('ยังโหลดเครื่องมือสร้าง Excel ไม่สำเร็จ กรุณาลองอีกครั้ง', 'error');
+      showToast('The Excel export library is not available. Please try again.', 'error');
       return;
     }
     const sample = [
-      { 'Exam file name': 'HN-001', 'Last name': 'ผู้รับบริการ', 'First name': 'ตัวอย่าง', 'CAP Enhanced Mean (dB/m)': 265, 'E Median (kPa)': 8.4, 'Height': 170, 'Weight': 71.7, 'Gender': 'M', 'Waist Circumference': 88, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026, 'Examiner Name': 'นพ. ตัวอย่าง ผู้ตรวจ' },
-      { 'Exam file name': 'HN-002', 'Last name': 'ตัวอย่าง', 'First name': 'ข้อมูล', 'CAP Enhanced Mean (dB/m)': 286, 'E Median (kPa)': 11.2, 'Height': 160, 'Weight': 69.4, 'Gender': 'F', 'Waist Circumference': 92, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2569, 'Examiner Name': 'พญ. ตัวอย่าง ผู้ตรวจ' }
+      { 'Exam file name': 'HN-001', 'Last name': 'Patient', 'First name': 'Example', 'CAP Enhanced Mean (dB/m)': 265, 'E Median (kPa)': 8.4, 'Height': 170, 'Weight': 71.7, 'Gender': 'M', 'Waist Circumference': 88, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026, 'Examiner Name': 'Dr Sample Examiner' },
+      { 'Exam file name': 'HN-002', 'Last name': 'Record', 'First name': 'Sample', 'CAP Enhanced Mean (dB/m)': 286, 'E Median (kPa)': 11.2, 'Height': 160, 'Weight': 69.4, 'Gender': 'F', 'Waist Circumference': 92, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026, 'Examiner Name': 'Dr Sample Examiner' }
     ];
     const worksheet = XLSX.utils.json_to_sheet(sample);
     worksheet['!cols'] = [{ wch: 18 }, { wch: 20 }, { wch: 20 }, { wch: 29 }, { wch: 16 }, { wch: 11 }, { wch: 11 }, { wch: 11 }, { wch: 22 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 24 }];
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'FibroScan Data');
     XLSX.writeFile(workbook, 'FibroScan_Template.xlsx');
-    showToast('ดาวน์โหลดไฟล์ตัวอย่างแล้ว');
+    showToast('Excel template downloaded.');
   }
 
   function initials(name) {
     const parts = String(name || '?').trim().split(/\s+/).filter(Boolean);
-    if (name === 'ไม่ระบุชื่อ' || name === 'ไม่พบชื่อในไฟล์') return 'NA';
+    if (name === 'Name unavailable') return 'NA';
     return parts.slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase() || '?';
   }
 
   function formatMetric(value, decimals) {
-    return value === null ? '—' : Number(value).toLocaleString('th-TH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    return value === null ? '—' : Number(value).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
 
   function bindEvents() {
@@ -611,7 +611,7 @@
       App.state.analysisMode = event.target.value === 'latest' ? 'latest' : 'all';
       App.state.tablePage = 1;
       renderAll();
-      showToast(App.state.analysisMode === 'latest' ? 'แสดงผลล่าสุดของผู้ป่วยแต่ละราย' : 'แสดงผลจากทุกรอบตรวจ');
+      showToast(App.state.analysisMode === 'latest' ? 'Showing the latest examination for each patient.' : 'Showing all examination records.');
     });
     ['patient-search', 'gender-filter', 'date-filter', 'steatosis-filter', 'fibrosis-filter'].forEach(id => $(`#${id}`).addEventListener(id === 'patient-search' ? 'input' : 'change', renderPatientList));
     $('#patient-list').addEventListener('click', event => {
@@ -636,7 +636,7 @@
       App.saveSettings({ ...App.DEFAULT_SETTINGS });
       fillSettingsForm();
       renderAll();
-      showToast('คืนค่าเกณฑ์เริ่มต้นแล้ว');
+      showToast('Default clinical thresholds restored.');
     });
   }
 

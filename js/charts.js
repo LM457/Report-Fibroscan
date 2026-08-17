@@ -5,7 +5,7 @@
   // to 4x internally without changing the chart's physical CSS dimensions.
   const screenChartPixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 2), 2);
   const getChartPixelRatio = () => App.state.chartExportMode ? 4 : screenChartPixelRatio;
-  const chartFontFamily = 'Tahoma, "Leelawadee UI", "IBM Plex Sans Thai", sans-serif';
+  const chartFontFamily = '"IBM Plex Sans", Arial, sans-serif';
   const chartFont = (size = 11, weight = 'normal') => ({ family: chartFontFamily, size, weight, lineHeight: 1.3 });
   const chartTextColor = '#617784';
   const chartTitleColor = '#506978';
@@ -57,7 +57,7 @@
   App.renderOverviewCharts = function renderOverviewCharts() {
     if (!window.Chart || !App.state.data.length) return;
     const data = App.getAnalysisData ? App.getAnalysisData() : App.state.data;
-    const fibrosisLabels = ['ไม่มีนัยสำคัญ (F0-F1)', 'ปานกลาง (F2)', 'รุนแรง (F3)', 'ตับแข็ง (F4)'];
+    const fibrosisLabels = ['No Significant Fibrosis (F0-F1)', 'Moderate Fibrosis (F2)', 'Severe Fibrosis (F3)', 'Cirrhosis (F4)'];
     const fibrosisColors = [App.colors.tealLight, App.colors.amber, App.colors.coral, App.colors.red];
     const fibrosisCounts = [0, 0, 0, 0];
     data.forEach(patient => {
@@ -77,7 +77,7 @@
       <div><span><i style="background:${fibrosisColors[index]}"></i>${label}</span><strong>${fibrosisCounts[index]}</strong></div>
     `).join('');
 
-    const capLabels = ['ปกติ S0', 'เล็กน้อย S1', 'ปานกลาง S2', 'มาก S3'];
+    const capLabels = ['No Steatosis (S0)', 'Mild Steatosis (S1)', 'Moderate Steatosis (S2)', 'Severe Steatosis (S3)'];
     const capColors = [App.colors.tealLight, App.colors.lime, App.colors.amber, App.colors.coral];
     const capCounts = [0, 0, 0, 0];
     data.forEach(patient => {
@@ -87,7 +87,7 @@
     });
     destroyChart('cap');
     const capOptions = baseOptions();
-    capOptions.plugins.tooltip.callbacks = { label: context => ` ${context.raw} ราย` };
+    capOptions.plugins.tooltip.callbacks = { label: context => ` ${context.raw} examinations` };
     capOptions.scales.y.ticks.precision = 0;
     App.state.charts.cap = new Chart(document.getElementById('cap-chart'), {
       type: 'bar',
@@ -121,12 +121,12 @@
       options: scatterOptions
     });
 
-    const genders = ['ชาย', 'หญิง', 'ไม่ระบุ'];
+    const genders = ['Male', 'Female', 'Unspecified'];
     const genderData = genders.map(gender => data.filter(patient => patient.gender === gender));
     destroyChart('gender');
     const genderOptions = baseOptions();
     genderOptions.plugins.legend = { display: true, position: 'bottom', labels: { color: chartTextColor, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, padding: 16, font: chartFont(11) } };
-    genderOptions.scales.y.title = { display: true, text: 'ค่าเฉลี่ย', color: chartTitleColor, padding: 10, font: chartFont(12) };
+    genderOptions.scales.y.title = { display: true, text: 'Mean Value', color: chartTitleColor, padding: 10, font: chartFont(12) };
     App.state.charts.gender = new Chart(document.getElementById('gender-chart'), {
       type: 'bar',
       data: {
@@ -158,7 +158,7 @@
       minRotation: 0,
       padding: 8
     };
-    waistOptions.plugins.tooltip.callbacks = { label: context => ` Mean CAP เฉลี่ย ${context.raw ? context.raw.toFixed(1) : '—'} dB/m` };
+    waistOptions.plugins.tooltip.callbacks = { label: context => ` Mean CAP: ${context.raw === null ? 'No data' : `${context.raw.toFixed(1)} dB/m`}` };
     App.state.charts.waist = new Chart(document.getElementById('waist-chart'), {
       type: 'line',
       data: {
@@ -179,8 +179,8 @@
       minRotation: 0,
       padding: 8
     };
-    waistEOptions.plugins.tooltip.callbacks = { label: context => ` E Median เฉลี่ย ${context.raw === null ? '—' : `${context.raw.toFixed(1)} kPa`}` };
-    waistEOptions.scales.y.title = { display: true, text: 'E Median เฉลี่ย (kPa)', color: chartTitleColor, padding: 10, font: chartFont(12) };
+    waistEOptions.plugins.tooltip.callbacks = { label: context => ` Mean E Median: ${context.raw === null ? 'No data' : `${context.raw.toFixed(1)} kPa`}` };
+    waistEOptions.scales.y.title = { display: true, text: 'Mean E Median (kPa)', color: chartTitleColor, padding: 10, font: chartFont(12) };
     App.state.charts.waistE = new Chart(document.getElementById('waist-e-chart'), {
       type: 'line',
       data: {
@@ -228,8 +228,8 @@
       options.indexAxis = 'y';
       options.plugins.legend = { display: false };
       options.plugins.tooltip.callbacks = {
-        label: context => ` ${context.dataset.label}: ${context.raw === null ? 'ไม่มีข้อมูล' : `${context.raw.toFixed(1)}%`}`,
-        afterLabel: context => ` จำนวนตัวอย่าง ${groups[context.dataIndex]?.count || 0} ราย`
+        label: context => ` ${context.dataset.label}: ${context.raw === null ? 'No data' : `${context.raw.toFixed(1)}%`}`,
+        afterLabel: context => ` Sample size: ${groups[context.dataIndex]?.count || 0}`
       };
       options.scales.x.min = 0;
       options.scales.x.max = 100;
@@ -253,8 +253,8 @@
       });
     };
     renderRiskChart('riskBMI', 'risk-bmi-chart', 'BMI');
-    renderRiskChart('riskWaist', 'risk-waist-chart', 'รอบเอว');
-    renderRiskChart('riskGender', 'risk-gender-chart', 'เพศ');
+    renderRiskChart('riskWaist', 'risk-waist-chart', 'Waist Circumference');
+    renderRiskChart('riskGender', 'risk-gender-chart', 'Sex');
     App.setupGlobalLegend();
     syncGlobalLegend(false);
   };

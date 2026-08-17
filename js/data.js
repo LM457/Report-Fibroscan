@@ -114,9 +114,9 @@
 
   function normalizeGender(value) {
     const gender = String(value ?? '').trim().toLowerCase();
-    if (['m', 'male', 'man', 'ชาย', 'ผู้ชาย'].includes(gender)) return 'ชาย';
-    if (['f', 'female', 'woman', 'หญิง', 'ผู้หญิง'].includes(gender)) return 'หญิง';
-    return 'ไม่ระบุ';
+    if (['m', 'male', 'man', 'ชาย', 'ผู้ชาย'].includes(gender)) return 'Male';
+    if (['f', 'female', 'woman', 'หญิง', 'ผู้หญิง'].includes(gender)) return 'Female';
+    return 'Unspecified';
   }
 
   function cell(row, columns, key) {
@@ -143,10 +143,10 @@
     const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: null, raw: true });
-    if (rows.length < 2) throw new Error('ไม่พบข้อมูลในไฟล์ Excel');
+    if (rows.length < 2) throw new Error('No examination data was found in the Excel file.');
 
     const headerRowIndex = findHeaderRowIndex(rows);
-    if (headerRowIndex < 0) throw new Error('ไม่พบแถวหัวตาราง');
+    if (headerRowIndex < 0) throw new Error('The header row could not be identified.');
     const headers = rows[headerRowIndex];
     const columns = Object.fromEntries(Object.keys(COLUMN_ALIASES).map(key => [key, findColumn(headers, key)]));
     if (columns.name < 0 && columns.firstName < 0 && columns.lastName < 0) {
@@ -154,7 +154,7 @@
     }
 
     if (columns.cap < 0 && columns.stiffness < 0) {
-      throw new Error('ไม่พบคอลัมน์ Mean CAP หรือ E (kPa) กรุณาตรวจสอบชื่อหัวตาราง');
+      throw new Error('Neither CAP Enhanced Mean nor E Median (kPa) was found. Check the column headings.');
     }
 
     const patients = rows.slice(headerRowIndex + 1).map((row, index) => {
@@ -195,8 +195,7 @@
       const patient = {
         rowNumber: headerRowIndex + index + 2,
         id: resolvedId,
-        // เพิ่มสำหรับใช้สร้างตัวเชื่อมผู้ป่วยด้วยชื่อและนามสกุลในอนาคต
-        // เก็บแยกจาก patientName เพื่อให้สามารถ Normalize และเปรียบเทียบแต่ละส่วนได้อย่างถูกต้อง
+        // Retain name components separately for normalized cross-file patient matching.
         firstName,
         lastName,
         patientName: String(patientName ?? '').trim(),
@@ -212,15 +211,15 @@
         waist: parseNumber(cell(row, columns, 'waist')),
         examDate,
         date: examDate,
-        examiner: String(cell(row, columns, 'examiner') ?? '').trim() || 'ไม่ระบุ'
+        examiner: String(cell(row, columns, 'examiner') ?? '').trim() || 'Not specified'
       };
       if (!patient.id) patient.id = `ROW-${patient.rowNumber}`;
-      if (!patient.patientName) patient.patientName = 'ไม่พบชื่อในไฟล์';
+      if (!patient.patientName) patient.patientName = 'Name unavailable';
       patient.name = patient.patientName;
       return patient;
     }).filter(patient => [patient.cap, patient.stiffness, patient.bmi, patient.waist].some(value => value !== null));
 
-    if (!patients.length) throw new Error('ไม่พบแถวข้อมูลผู้รับการตรวจที่ใช้งานได้');
+    if (!patients.length) throw new Error('No usable patient examination records were found.');
     return patients;
   };
 
@@ -241,37 +240,37 @@
 
   App.classifyFibrosis = function classifyFibrosis(value) {
     const s = App.state.settings;
-    if (value === null) return { code: '—', label: 'ไม่มีข้อมูล', className: 'neutral', color: App.colors.slate };
-    if (value <= s.eF01Max) return { code: 'F0-F1', label: 'ไม่มีพังผืดที่มีนัยสำคัญ', stage: 'No Significant Fibrosis', className: 'normal', color: App.colors.tealLight };
-    if (value < s.eF2) return { code: '—', label: 'อยู่นอกช่วงเกณฑ์', className: 'neutral', color: App.colors.slate };
-    if (value < s.eF3) return { code: 'F2', label: 'พังผืดปานกลาง', stage: 'Moderate Liver Fibrosis', className: 'moderate', color: App.colors.amber };
-    if (value < s.eF4) return { code: 'F3', label: 'พังผืดรุนแรง', stage: 'Severe Liver Fibrosis', className: 'severe', color: App.colors.coral };
-    return { code: 'F4', label: 'ตับแข็ง', stage: 'Cirrhosis', className: 'critical', color: App.colors.red };
+    if (value === null) return { code: '—', label: 'Data unavailable', className: 'neutral', color: App.colors.slate };
+    if (value <= s.eF01Max) return { code: 'F0-F1', label: 'No Significant Fibrosis', stage: 'No Significant Fibrosis', className: 'normal', color: App.colors.tealLight };
+    if (value < s.eF2) return { code: '—', label: 'Outside Configured Range', className: 'neutral', color: App.colors.slate };
+    if (value < s.eF3) return { code: 'F2', label: 'Moderate Fibrosis', stage: 'Moderate Liver Fibrosis', className: 'moderate', color: App.colors.amber };
+    if (value < s.eF4) return { code: 'F3', label: 'Severe Fibrosis', stage: 'Severe Liver Fibrosis', className: 'severe', color: App.colors.coral };
+    return { code: 'F4', label: 'Cirrhosis', stage: 'Cirrhosis', className: 'critical', color: App.colors.red };
   };
 
   App.classifyCap = function classifyCap(value) {
     const s = App.state.settings;
-    if (value === null) return { code: '—', label: 'ไม่มีข้อมูล', className: 'neutral', color: App.colors.slate };
-    if (value <= s.capS0Max) return { code: 'S0', label: 'ปกติ', liverFat: '< 10%', range: `≤ ${s.capS0Max} dB/m`, className: 'normal', color: App.colors.tealLight };
-    if (value < s.capS1) return { code: '—', label: 'อยู่นอกช่วงเกณฑ์', liverFat: 'ไม่ทราบ', range: `${s.capS0Max} - ${s.capS1}`, className: 'neutral', color: App.colors.slate };
-    if (value < s.capS2) return { code: 'S1', label: 'ไขมันเล็กน้อย', liverFat: '11 - 33%', range: `${s.capS1} - ${s.capS2 - 1} dB/m`, className: 'mild', color: App.colors.lime };
-    if (value < s.capS3) return { code: 'S2', label: 'ไขมันปานกลาง', liverFat: '34 - 66%', range: `${s.capS2} - ${s.capS3 - 1} dB/m`, className: 'moderate', color: App.colors.amber };
-    return { code: 'S3', label: 'ไขมันมาก', liverFat: '> 67%', range: `≥ ${s.capS3} dB/m`, className: 'severe', color: App.colors.coral };
+    if (value === null) return { code: '—', label: 'Data unavailable', className: 'neutral', color: App.colors.slate };
+    if (value <= s.capS0Max) return { code: 'S0', label: 'No Steatosis', liverFat: '< 10%', range: `≤ ${s.capS0Max} dB/m`, className: 'normal', color: App.colors.tealLight };
+    if (value < s.capS1) return { code: '—', label: 'Outside Configured Range', liverFat: 'Unknown', range: `${s.capS0Max} - ${s.capS1}`, className: 'neutral', color: App.colors.slate };
+    if (value < s.capS2) return { code: 'S1', label: 'Mild Steatosis', liverFat: '11 - 33%', range: `${s.capS1} - ${s.capS2 - 1} dB/m`, className: 'mild', color: App.colors.lime };
+    if (value < s.capS3) return { code: 'S2', label: 'Moderate Steatosis', liverFat: '34 - 66%', range: `${s.capS2} - ${s.capS3 - 1} dB/m`, className: 'moderate', color: App.colors.amber };
+    return { code: 'S3', label: 'Severe Steatosis', liverFat: '> 67%', range: `≥ ${s.capS3} dB/m`, className: 'severe', color: App.colors.coral };
   };
 
   App.classifyBMI = function classifyBMI(value) {
     const s = App.state.settings;
-    if (value === null) return { code: 'Unknown', label: 'ไม่ทราบ' };
-    if (value < s.bmiNormalStart) return { code: '1', label: `น้ำหนักต่ำ (<${s.bmiNormalStart})` };
-    if (value < s.bmiOverweightStart) return { code: '2', label: `ปกติ (${s.bmiNormalStart}-${s.bmiOverweightStart})` };
-    if (value < s.bmiObesity1Start) return { code: '3', label: `น้ำหนักเกิน (${s.bmiOverweightStart}-${s.bmiObesity1Start})` };
-    if (value < s.bmiObesity2Start) return { code: '4', label: `อ้วนระดับ 1 (${s.bmiObesity1Start}-${s.bmiObesity2Start})` };
-    return { code: '5', label: `อ้วนระดับ 2 (≥${s.bmiObesity2Start})` };
+    if (value === null) return { code: 'Unknown', label: 'Unknown' };
+    if (value < s.bmiNormalStart) return { code: '1', label: `Underweight (<${s.bmiNormalStart})` };
+    if (value < s.bmiOverweightStart) return { code: '2', label: `Normal (${s.bmiNormalStart}-${s.bmiOverweightStart})` };
+    if (value < s.bmiObesity1Start) return { code: '3', label: `Overweight (${s.bmiOverweightStart}-${s.bmiObesity1Start})` };
+    if (value < s.bmiObesity2Start) return { code: '4', label: `Obesity Class I (${s.bmiObesity1Start}-${s.bmiObesity2Start})` };
+    return { code: '5', label: `Obesity Class II (≥${s.bmiObesity2Start})` };
   };
 
   App.isHighWaist = function isHighWaist(patient) {
-    if (patient.waist === null || patient.gender === 'ไม่ระบุ') return null;
-    return patient.gender === 'หญิง'
+    if (patient.waist === null || patient.gender === 'Unspecified') return null;
+    return patient.gender === 'Female'
       ? patient.waist >= App.state.settings.waistFemaleHigh
       : patient.waist >= App.state.settings.waistMaleHigh;
   };
@@ -289,15 +288,15 @@
   App.getRiskFactorAnalysis = function getRiskFactorAnalysis(data = App.state.data) {
     const s = App.state.settings;
     const groups = [
-      { key: 'bmi-low', label: `น้ำหนักต่ำ (<${s.bmiNormalStart})`, shortLabel: 'น้ำหนักต่ำ', type: 'BMI', test: p => p.bmi !== null && p.bmi < s.bmiNormalStart },
-      { key: 'bmi-normal', label: `ปกติ (${s.bmiNormalStart}-${s.bmiOverweightStart})`, shortLabel: 'ปกติ', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiNormalStart && p.bmi < s.bmiOverweightStart },
-      { key: 'bmi-overweight', label: `น้ำหนักเกิน (${s.bmiOverweightStart}-${s.bmiObesity1Start})`, shortLabel: 'น้ำหนักเกิน', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiOverweightStart && p.bmi < s.bmiObesity1Start },
-      { key: 'bmi-obese-1', label: `อ้วนระดับ 1 (${s.bmiObesity1Start}-${s.bmiObesity2Start})`, shortLabel: 'อ้วนระดับ 1', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiObesity1Start && p.bmi < s.bmiObesity2Start },
-      { key: 'bmi-obese-2', label: `อ้วนระดับ 2 (≥${s.bmiObesity2Start})`, shortLabel: 'อ้วนระดับ 2', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiObesity2Start },
-      { key: 'waist-normal', label: 'รอบเอวไม่สูง', shortLabel: 'รอบเอวไม่สูง', type: 'รอบเอว', test: p => App.isHighWaist(p) === false },
-      { key: 'waist-high', label: 'รอบเอวสูง', shortLabel: 'รอบเอวสูง', type: 'รอบเอว', test: p => App.isHighWaist(p) === true },
-      { key: 'gender-male', label: 'เพศชาย', shortLabel: 'ชาย', type: 'เพศ', test: p => p.gender === 'ชาย' },
-      { key: 'gender-female', label: 'เพศหญิง', shortLabel: 'หญิง', type: 'เพศ', test: p => p.gender === 'หญิง' }
+      { key: 'bmi-low', label: `Underweight (<${s.bmiNormalStart})`, shortLabel: 'Underweight', type: 'BMI', test: p => p.bmi !== null && p.bmi < s.bmiNormalStart },
+      { key: 'bmi-normal', label: `Normal (${s.bmiNormalStart}-${s.bmiOverweightStart})`, shortLabel: 'Normal', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiNormalStart && p.bmi < s.bmiOverweightStart },
+      { key: 'bmi-overweight', label: `Overweight (${s.bmiOverweightStart}-${s.bmiObesity1Start})`, shortLabel: 'Overweight', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiOverweightStart && p.bmi < s.bmiObesity1Start },
+      { key: 'bmi-obese-1', label: `Obesity Class I (${s.bmiObesity1Start}-${s.bmiObesity2Start})`, shortLabel: 'Obesity I', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiObesity1Start && p.bmi < s.bmiObesity2Start },
+      { key: 'bmi-obese-2', label: `Obesity Class II (≥${s.bmiObesity2Start})`, shortLabel: 'Obesity II', type: 'BMI', test: p => p.bmi !== null && p.bmi >= s.bmiObesity2Start },
+      { key: 'waist-normal', label: 'Waist Circumference Below Threshold', shortLabel: 'Below Threshold', type: 'Waist Circumference', test: p => App.isHighWaist(p) === false },
+      { key: 'waist-high', label: 'Elevated Waist Circumference', shortLabel: 'Elevated', type: 'Waist Circumference', test: p => App.isHighWaist(p) === true },
+      { key: 'gender-male', label: 'Male', shortLabel: 'Male', type: 'Sex', test: p => p.gender === 'Male' },
+      { key: 'gender-female', label: 'Female', shortLabel: 'Female', type: 'Sex', test: p => p.gender === 'Female' }
     ];
     return groups.map(group => {
       const members = data.filter(group.test);
@@ -321,7 +320,7 @@
 
   App.formatDate = function formatDate(date, style = 'short') {
     if (!date) return '—';
-    return new Intl.DateTimeFormat('th-TH', style === 'long'
+    return new Intl.DateTimeFormat('en-GB', style === 'long'
       ? { day: 'numeric', month: 'long', year: 'numeric' }
       : { day: '2-digit', month: 'short', year: '2-digit' }).format(date);
   };
@@ -339,12 +338,12 @@
     const firstName = normalizePatientName(patient?.firstName);
     const lastName = normalizePatientName(patient?.lastName);
 
-    // เชื่อมข้ามไฟล์เมื่อมีทั้งชื่อและนามสกุลครบ
+    // Match records across files only when both first and last names are available.
     if (firstName && lastName) {
       return `name|${firstName}|${lastName}`;
     }
 
-    // ถ้าชื่อไม่ครบ จะไม่รวมกับรายการอื่นเพื่อป้องกันรวมผู้ป่วยผิดคน
+    // Keep incomplete names separate to avoid merging different patients.
     return `unknown|${patient?.sourceFileId || ''}|${patient?.rowNumber || ''}`;
   };
 

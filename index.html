@@ -1,30 +1,30 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="แดชบอร์ดวิเคราะห์ข้อมูล FibroScan แบบประมวลผลภายในเบราว์เซอร์ โดยไม่จัดเก็บข้อมูลผู้ป่วย">
+  <meta name="description" content="Privacy-first FibroScan analytics dashboard with all patient data processed locally in the browser.">
   <title>FibroSight | FibroScan Analytics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=20260814-multi-file">
+  <link rel="stylesheet" href="css/styles.css?v=20260817-clinical-en">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-  <script src="js/config.js?v=20260814-multi-file" defer></script>
+  <script src="js/config.js?v=20260817-clinical-en" defer></script>
   <script src="js/logo-data.js" defer></script>
-  <script src="js/data.js?v=20260814-multi-file" defer></script>
-  <script src="js/charts.js?v=20260814-multi-file" defer></script>
-  <script src="js/report.js?v=20260814-multi-file" defer></script>
-  <script src="js/app.js?v=20260814-multi-file" defer></script>
+  <script src="js/data.js?v=20260817-clinical-en" defer></script>
+  <script src="js/charts.js?v=20260817-clinical-en" defer></script>
+  <script src="js/report.js?v=20260817-clinical-en" defer></script>
+  <script src="js/app.js?v=20260817-clinical-en" defer></script>
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar" aria-label="เมนูหลัก">
-      <a class="brand" href="#overview" data-page-link="overview" aria-label="FibroSight หน้าหลัก">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <a class="brand" href="#overview" data-page-link="overview" aria-label="FibroSight home">
         <br>
           <img class="company-logo" src="valorhealth-removebg.png" alt="Valor Health" width="250" height="150">
         </br> 
@@ -51,12 +51,12 @@
 
       <div class="privacy-card">
         <span class="privacy-icon"><i class="fa-solid fa-shield-halved"></i></span>
-        <div><strong>ไม่จัดเก็บข้อมูล</strong><p>ข้อมูลอยู่เฉพาะในแท็บนี้ และจะหายเมื่อรีเฟรชหรือปิดหน้าเว็บ</p></div>
+        <div><strong>Privacy First</strong><p>Your data remains on your device and is never sent to a server.</p></div>
       </div>
 
       <div class="sidebar-foot">
         <span class="status-dot"></span>
-        <div><strong>ประมวลผลบนอุปกรณ์</strong><small>ไม่มีการส่งข้อมูลขึ้นเซิร์ฟเวอร์</small></div>
+        <div><strong>Processed on your device</strong><small>No data is sent to a server.</small></div>
       </div>
     </aside>
 
@@ -64,14 +64,14 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">Clinical information</p>
-          <h1 id="page-title">Overview FibroScan</h1>
+          <h1 id="page-title">FibroScan Overview</h1>
         </div>
         <div class="topbar-actions">
-          <div id="file-pill" class="file-pill hidden" title="File Analysis name">
+          <div id="file-pill" class="file-pill hidden" title="Active dataset">
             <i class="fa-regular fa-file-excel"></i><span id="current-file-name">—</span>
           </div>
           <button id="clear-data-btn" class="btn btn-ghost hidden" type="button">
-            <i class="fa-solid fa-trash-can"></i><span>ล้างทั้งหมด</span>
+            <i class="fa-solid fa-trash-can"></i><span>Clear Data</span>
           </button>
           <button id="export-pdf-btn" class="btn btn-secondary hidden" type="button">
             <i class="fa-solid fa-file-pdf"></i><span>Export PDF</span>
@@ -83,121 +83,121 @@
       </header>
 
       <div class="content-wrap">
-        <section id="page-overview" class="page active" data-title="Overview FibroScan">
+        <section id="page-overview" class="page active" data-title="FibroScan Overview">
           <div id="welcome-state" class="welcome-grid">
             <div class="welcome-copy">
-              <span class="section-kicker"><i class="fa-solid fa-lock"></i> Design for Privacy</span>
+              <span class="section-kicker"><i class="fa-solid fa-lock"></i> Privacy by Design</span>
               <h2>Transform FibroScan Data<br>Into Easy-to-Understand Insights</h2>
               <p>Upload an Excel file to view liver stiffness, steatosis, and risk factors for your patient cohort, with all data processed locally in your browser.</p>
               <div class="welcome-actions">
                 <button class="btn btn-primary btn-large" type="button" data-open-upload>
-                  <i class="fa-solid fa-arrow-up-from-bracket"></i> Choose File Excel
+                  <i class="fa-solid fa-arrow-up-from-bracket"></i> Select Excel Files
                 </button>
                 <button id="download-template-btn" class="btn btn-secondary btn-large" type="button">
                   <i class="fa-solid fa-download"></i> Download Template
                 </button>
               </div>
-              <p class="accepted-files"><i class="fa-regular fa-circle-check"></i> รองรับ .xlsx และ .xls · ไม่เกิน 25 MB</p>
+              <p class="accepted-files"><i class="fa-regular fa-circle-check"></i> Supports .xlsx and .xls · Maximum 25 MB per file</p>
             </div>
             <div class="welcome-visual" aria-hidden="true">
               <div class="visual-orbit orbit-one"></div>
               <div class="visual-orbit orbit-two"></div>
               <div class="scan-card">
-                <div class="scan-head"><span><img class="liver-icon liver-icon--scan" src="assets/liver-icon.svg" alt="" aria-hidden="true"> ผลตรวจตับ</span><small>ในเครื่อง</small></div>
+                <div class="scan-head"><span><img class="liver-icon liver-icon--scan" src="assets/liver-icon.svg" alt="" aria-hidden="true"> Liver Scan Results</span><small>On-device</small></div>
                 <div class="scan-kpi"><strong>8.4</strong><span>kPa</span></div>
                 <div class="wave-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-                <div class="scan-foot"><span>ความแข็งของตับ</span><b>F2</b></div>
+                <div class="scan-foot"><span>Liver Stiffness</span><b>F2</b></div>
               </div>
               <div class="float-chip chip-cap"><small>MEAN CAP</small><strong>267 <em>dB/m</em></strong></div>
-              <div class="float-chip chip-secure"><i class="fa-solid fa-check"></i><span><small>ข้อมูลปลอดภัย</small><strong>100% ภายในเครื่อง</strong></span></div>
+              <div class="float-chip chip-secure"><i class="fa-solid fa-check"></i><span><small>Data is secure</small><strong>100% On-device</strong></span></div>
             </div>
           </div>
 
           <div id="dashboard-state" class="hidden">
             <div class="section-heading">
-              <div><p class="section-kicker">ภาพรวมชุดข้อมูล</p><h2>สรุปภาพรวมของกลุ่มผู้รับการตรวจ</h2></div>
+              <div><p class="section-kicker">Dataset Overview</p><h2>Patient Cohort Summary</h2></div>
               <div class="dataset-tools">
-                <label class="analysis-mode-control"><span>มุมมองข้อมูล</span><select id="analysis-mode"><option value="all">ทุกรอบตรวจ</option><option value="latest">ผลล่าสุดต่อผู้ป่วย</option></select></label>
+                <label class="analysis-mode-control"><span>Data View</span><select id="analysis-mode"><option value="all">All Exams</option><option value="latest">Latest Results per Patient</option></select></label>
                 <div class="dataset-meta"><span id="dataset-date-range">—</span><span id="dataset-updated">—</span></div>
               </div>
             </div>
             <div id="data-quality-banner" class="data-quality-banner hidden"></div>
             <article id="file-manager" class="file-manager panel">
-              <div class="file-manager-head"><div><h3>ไฟล์ข้อมูลในรอบการวิเคราะห์</h3><p id="file-manager-summary">ยังไม่มีไฟล์</p></div><button class="btn btn-secondary btn-add-file" type="button" data-open-upload><i class="fa-solid fa-plus"></i> เพิ่มไฟล์</button></div>
+              <div class="file-manager-head"><div><h3>Active Dataset</h3><p id="file-manager-summary">No files yet</p></div><button class="btn btn-secondary btn-add-file" type="button" data-open-upload><i class="fa-solid fa-plus"></i> Add file</button></div>
               <div id="file-manager-list" class="file-manager-list"></div>
-              <p class="file-merge-note"><i class="fa-solid fa-shield-halved"></i> รอบตรวจต่างวันที่ของรหัสเดียวกันจะถูกเก็บเป็นประวัติต่อเนื่อง ส่วนรายการที่มีรหัส วันที่ ค่า E และ CAP เหมือนกันจะนับเพียงครั้งเดียว ข้อมูลทั้งหมดอยู่ในหน่วยความจำของเบราว์เซอร์เท่านั้น</p>
+              <p class="file-merge-note"><i class="fa-solid fa-shield-halved"></i> Records with the same first and last name but different examination dates are retained as longitudinal history. Exact duplicate examinations are counted once. All processing occurs locally in browser memory.</p>
             </article>
 
             <div class="kpi-grid">
               <article class="kpi-card kpi-teal">
-                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-user-group"></i></span><span class="kpi-label">ผู้ป่วยไม่ซ้ำ</span></div>
-                <div class="kpi-value"><strong id="kpi-total">0</strong><span>ราย</span></div>
-                <p id="kpi-complete">ข้อมูลสมบูรณ์ 0%</p>
+                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-user-group"></i></span><span class="kpi-label">Unique Patients</span></div>
+                <div class="kpi-value"><strong id="kpi-total">0</strong><span>Patients</span></div>
+                <p id="kpi-complete">Complete Data 0%</p>
               </article>
               <article class="kpi-card kpi-amber">
-                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="kpi-label">จำนวนครั้งที่ตรวจ</span></div>
-                <div class="kpi-value"><strong id="kpi-exams">0</strong><span>ครั้ง</span></div>
-                <p id="kpi-files">จาก 0 ไฟล์</p>
+                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="kpi-label">Number of Exams</span></div>
+                <div class="kpi-value"><strong id="kpi-exams">0</strong><span>Exams</span></div>
+                <p id="kpi-files">from 0 files</p>
               </article>
               <article class="kpi-card kpi-coral">
-                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><span class="kpi-label">อยู่ในกลุ่มเสี่ยงสูง</span></div>
+                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><span class="kpi-label">High-Risk Group</span></div>
                 <div class="kpi-value"><strong id="kpi-risk">0%</strong></div>
-                <p id="kpi-risk-count">0 รายที่ควรติดตาม</p>
+                <p id="kpi-risk-count">0 patients to monitor</p>
               </article>
               <article class="kpi-card kpi-blue">
-                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-weight-scale"></i></span><span class="kpi-label">BMI เฉลี่ย (คำนวณ)</span></div>
+                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-weight-scale"></i></span><span class="kpi-label">Average BMI (Calculated)</span></div>
                 <div class="kpi-value"><strong id="kpi-bmi">—</strong><span>kg/m²</span></div>
-                <p id="kpi-bmi-label">ยังไม่มีข้อมูล</p>
+                <p id="kpi-bmi-label">No data available</p>
               </article>
               <article class="kpi-card kpi-lime">
-                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-droplet"></i></span><span class="kpi-label">Mean CAP เฉลี่ย</span></div>
+                <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-droplet"></i></span><span class="kpi-label">Mean CAP</span></div>
                 <div class="kpi-value"><strong id="kpi-cap">—</strong><span>dB/m</span></div>
-                <p id="kpi-cap-label">ยังไม่มีข้อมูล</p>
+                <p id="kpi-cap-label">No data available </p>
               </article>
             </div>
 
             <div class="chart-grid">
               <article class="panel chart-panel">
-                <div class="panel-head"><div><h3>ระดับพังผืดในตับ</h3><p>จำแนกจากค่าความแข็งของตับ E Median (kPa)</p></div><span class="panel-tag">พังผืด</span></div>
-                <div class="donut-wrap"><canvas id="fibrosis-chart" aria-label="กราฟระดับพังผืดในตับ"></canvas><div class="donut-center"><strong id="fibrosis-center">0</strong><span>ราย</span></div></div>
+                <div class="panel-head"><div><h3>Liver Fibrosis Stage</h3><p>Classified by median liver stiffness, E Median (kPa)</p></div><span class="panel-tag">Fibrosis</span></div>
+                <div class="donut-wrap"><canvas id="fibrosis-chart" aria-label="Distribution of liver fibrosis stages"></canvas><div class="donut-center"><strong id="fibrosis-center">0</strong><span>Patients</span></div></div>
                 <div id="fibrosis-legend" class="chart-legend"></div>
               </article>
               <article class="panel chart-panel">
-                <div class="panel-head"><div><h3>ระดับไขมันพอกตับ</h3><p>จำแนกจากค่า CAP Enhanced Mean (dB/m)</p></div><span class="panel-tag">ไขมันพอกตับ</span></div>
-                <div class="bar-wrap"><canvas id="cap-chart" aria-label="กราฟระดับไขมันพอกตับ"></canvas></div>
+                <div class="panel-head"><div><h3>Hepatic Steatosis Grade</h3><p>Classified by CAP Enhanced Mean (dB/m)</p></div><span class="panel-tag">Steatosis</span></div>
+                <div class="bar-wrap"><canvas id="cap-chart" aria-label="Distribution of hepatic steatosis grades"></canvas></div>
               </article>
             </div>
 
             <article class="panel table-panel">
               <div class="panel-head table-head">
-                <div><h3>ข้อมูลผู้รับการตรวจ</h3><p id="table-count-label">แสดงข้อมูลทั้งหมด</p></div>
-                <div class="mini-search"><i class="fa-solid fa-magnifying-glass"></i><input id="overview-search" type="search" placeholder="ค้นหาชื่อหรือรหัส..."></div>
+                <div><h3>Patient Data</h3><p id="table-count-label">Showing all data</p></div>
+                <div class="mini-search"><i class="fa-solid fa-magnifying-glass"></i><input id="overview-search" type="search" placeholder="Search by name or ID..."></div>
               </div>
               <div class="table-scroll">
                 <table>
-                  <thead><tr><th>รหัสผู้รับการตรวจ</th><th>ชื่อผู้รับการตรวจ</th><th>วันที่ตรวจ</th><th>เพศ</th><th>BMI</th><th>Mean CAP</th><th>E (kPa)</th><th>ระดับความเสี่ยง</th></tr></thead>
+                  <thead><tr><th>Reference ID</th><th>Patient Name</th><th>Examination Date</th><th>Sex</th><th>BMI</th><th>Mean CAP</th><th>E Median (kPa)</th><th>Risk Category</th></tr></thead>
                   <tbody id="overview-table-body"></tbody>
                 </table>
               </div>
-              <div class="pagination"><button id="table-prev" type="button"><i class="fa-solid fa-chevron-left"></i></button><span id="table-page-label">หน้า 1 / 1</span><button id="table-next" type="button"><i class="fa-solid fa-chevron-right"></i></button></div>
+              <div class="pagination"><button id="table-prev" type="button" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button><span id="table-page-label">Page 1 / 1</span><button id="table-next" type="button" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button></div>
             </article>
           </div>
         </section>
 
-        <section id="page-patients" class="page" data-title="ผลการตรวจรายบุคคล">
+        <section id="page-patients" class="page" data-title="Individual Results">
           <div class="section-heading">
-            <div><p class="section-kicker">ค้นหาผู้รับการตรวจ</p><h2>ค้นหาและดูผลรายบุคคล</h2><p>ค้นหาด้วยชื่อหรือรหัส และกรองผลการตรวจตามข้อมูลที่ต้องการ</p></div>
+            <div><p class="section-kicker">Patient Search</p><h2>Individual FibroScan Results</h2><p>Search by patient name or reference ID, then filter results by clinical category.</p></div>
           </div>
-          <div id="patient-empty" class="no-data-card"><span><i class="fa-regular fa-folder-open"></i></span><h3>ยังไม่มีข้อมูลให้ค้นหา</h3><p>กรุณานำเข้าไฟล์ Excel จากปุ่มด้านบนก่อน</p><button class="btn btn-primary" type="button" data-open-upload>นำเข้า Excel</button></div>
+          <div id="patient-empty" class="no-data-card"><span><i class="fa-regular fa-folder-open"></i></span><h3>No data available for search</h3><p>Please import an Excel file using the button above first.</p><button class="btn btn-primary" type="button" data-open-upload>Import Excel</button></div>
           <div id="patient-content" class="patient-layout hidden">
             <aside class="panel patient-finder">
-              <div class="finder-title"><div><h3>รายชื่อผู้รับการตรวจ</h3><p id="patient-result-count">0 ราย</p></div></div>
-              <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="patient-search" type="search" placeholder="ค้นหาชื่อหรือรหัส"></label>
+              <div class="finder-title"><div><h3>Patients</h3><p id="patient-result-count">0 patients found</p></div></div>
+              <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="patient-search" type="search" placeholder="Search by name or ID"></label>
               <div class="filter-row">
-                <label><span>เพศ</span><select id="gender-filter"><option value="">ทุกเพศ</option><option value="ชาย">ชาย</option><option value="หญิง">หญิง</option><option value="ไม่ระบุ">ไม่ระบุ</option></select></label>
-                <label><span>วันที่ตรวจ</span><select id="date-filter"><option value="">ทุกวันที่</option></select></label>
-                <label><span>ระดับ Steatosis</span><select id="steatosis-filter"><option value="">ทุกระดับ S</option><option value="S0">S0 ปกติ</option><option value="S1">S1 เล็กน้อย</option><option value="S2">S2 ปานกลาง</option><option value="S3">S3 รุนแรง</option></select></label>
-                <label><span>ระดับ Fibrosis</span><select id="fibrosis-filter"><option value="">ทุกระดับ F</option><option value="F0-F1">F0-F1 ไม่มีนัยสำคัญ</option><option value="F2">F2 ปานกลาง</option><option value="F3">F3 รุนแรง</option><option value="F4">F4 ตับแข็ง</option></select></label>
+                <label><span>Sex</span><select id="gender-filter"><option value="">All</option><option value="Male">Male</option><option value="Female">Female</option><option value="Unspecified">Unspecified</option></select></label>
+                <label><span>Examination Date</span><select id="date-filter"><option value="">All Dates</option></select></label>
+                <label><span>Steatosis Grade</span><select id="steatosis-filter"><option value="">All Grades</option><option value="S0">S0 - No Steatosis</option><option value="S1">S1 - Mild Steatosis</option><option value="S2">S2 - Moderate Steatosis</option><option value="S3">S3 - Severe Steatosis</option></select></label>
+                <label><span>Fibrosis Stage</span><select id="fibrosis-filter"><option value="">All Stages</option><option value="F0-F1">F0-F1 - No Significant Fibrosis</option><option value="F2">F2 - Moderate Fibrosis</option><option value="F3">F3 - Severe Fibrosis</option><option value="F4">F4 - Cirrhosis</option></select></label>
               </div>
               <div id="patient-list" class="patient-list"></div>
             </aside>
@@ -205,45 +205,45 @@
           </div>
         </section>
 
-        <section id="page-analysis" class="page" data-title="วิเคราะห์ข้อมูลเชิงลึก">
+        <section id="page-analysis" class="page" data-title="Advanced Analytics">
           <div class="section-heading">
-            <div><p class="section-kicker">การวิเคราะห์เชิงลึก</p><h2>สำรวจความสัมพันธ์ของปัจจัยเสี่ยง</h2><p>ดูแนวโน้มของ BMI, Mean CAP, เพศ และรอบเอวภายในชุดข้อมูลนี้</p></div>
+            <div><p class="section-kicker">Advanced Analytics</p><h2>Associations with Liver Health Outcomes</h2><p>Explore associations between BMI, CAP, liver stiffness, sex, and waist circumference within this dataset.</p></div>
           </div>
-          <div id="analysis-empty" class="no-data-card"><span><img class="liver-icon liver-icon--empty" src="assets/liver-icon.svg" alt="" aria-hidden="true"></span><h3>ยังไม่มีข้อมูลสำหรับวิเคราะห์</h3><p>นำเข้าไฟล์ Excel เพื่อสร้างกราฟและข้อสังเกตจากชุดข้อมูล</p><button class="btn btn-primary" type="button" data-open-upload>นำเข้า Excel</button></div>
+          <div id="analysis-empty" class="no-data-card"><span><img class="liver-icon liver-icon--empty" src="assets/liver-icon.svg" alt="" aria-hidden="true"></span><h3>No data available for analysis</h3><p>Import an Excel file to create charts and insights from the dataset</p><button class="btn btn-primary" type="button" data-open-upload>Import Excel</button></div>
           <div id="analysis-content" class="hidden">
             <div id="analysis-quality-banner" class="data-quality-banner hidden"></div>
             <div class="analysis-grid">
               <article class="panel analysis-wide">
-                <div class="panel-head"><div><h3>BMI เทียบกับ E Median (kPa)</h3><p>วิเคราะห์ความสัมพันธ์ระหว่าง BMI และระดับพังผืดในตับ</p></div><span class="panel-tag">FIBROSIS CORRELATION</span></div>
+                <div class="panel-head"><div><h3>BMI vs. E Median (kPa)</h3><p>Association between BMI and median liver stiffness</p></div><span class="panel-tag">FIBROSIS ASSOCIATION</span></div>
                 <div class="analysis-chart"><canvas id="bmi-e-chart"></canvas></div>
               </article>
               <article class="panel analysis-wide">
-                <div class="panel-head"><div><h3>BMI เทียบกับ Mean CAP</h3><p>แต่ละจุดแทนผู้รับการตรวจ 1 ราย</p></div><span class="panel-tag">ความสัมพันธ์</span></div>
+                <div class="panel-head"><div><h3>BMI vs. Mean CAP</h3><p>Association between BMI and hepatic steatosis; each point represents one examination</p></div><span class="panel-tag">STEATOSIS ASSOCIATION</span></div>
                 <div class="analysis-chart"><canvas id="bmi-cap-chart"></canvas></div>
               </article>
               <article class="panel">
-                <div class="panel-head"><div><h3>E Median ตามช่วงรอบเอว</h3><p>เปรียบเทียบค่าเฉลี่ยพังผืดตามช่วงรอบเอว</p></div></div>
+                <div class="panel-head"><div><h3>Mean E Median by Waist Category</h3><p>Mean liver stiffness across waist circumference categories</p></div></div>
                 <div class="analysis-chart"><canvas id="waist-e-chart"></canvas></div>
               </article>
               <article class="panel">
-                <div class="panel-head"><div><h3>Mean CAP ตามช่วงรอบเอว</h3><p>ช่วยมองเห็นแนวโน้มด้านเมตาบอลิก</p></div></div>
+                <div class="panel-head"><div><h3>Mean CAP by Waist Category</h3><p>Mean CAP across waist circumference categories</p></div></div>
                 <div class="analysis-chart"><canvas id="waist-chart"></canvas></div>
               </article>
               <article class="panel">
-                <div class="panel-head"><div><h3>ค่าเฉลี่ยแยกตามเพศ</h3><p>เปรียบเทียบ Mean CAP และ E (kPa)</p></div></div>
+                <div class="panel-head"><div><h3>Liver Measurements by Sex</h3><p>Compare Mean CAP and mean E Median (kPa) by sex</p></div></div>
                 <div class="analysis-chart"><canvas id="gender-chart"></canvas></div>
               </article>
               <article class="panel analysis-wide risk-factor-panel">
-                <div class="panel-head"><div><h3>อัตราการพบภาวะตามปัจจัยสุขภาพ</h3><p>Fibrosis ตั้งแต่ F2 และ Steatosis ตั้งแต่ S1 แสดงเป็นร้อยละภายในแต่ละกลุ่ม</p></div><span class="panel-tag">อัตราการพบ (%)</span></div>
+                <div class="panel-head"><div><h3>Prevalence by Health Factor</h3><p>Prevalence of significant fibrosis (≥ F2) and steatosis (≥ S1) within each subgroup</p></div><span class="panel-tag">PREVALENCE (%)</span></div>
                 <div class="risk-factor-layout">
                   <div class="factor-chart-groups">
                     <section class="factor-chart-section"><h4><i class="fa-solid fa-weight-scale"></i> BMI</h4><div class="factor-canvas bmi-canvas"><canvas id="risk-bmi-chart"></canvas></div></section>
-                    <section class="factor-chart-section"><h4><i class="fa-solid fa-ruler"></i> รอบเอว</h4><div class="factor-canvas waist-canvas"><canvas id="risk-waist-chart"></canvas></div></section>
-                    <section class="factor-chart-section"><h4><i class="fa-solid fa-venus-mars"></i> เพศ</h4><div class="factor-canvas gender-canvas"><canvas id="risk-gender-chart"></canvas></div></section>
+                    <section class="factor-chart-section"><h4><i class="fa-solid fa-ruler"></i> Waist Circumference</h4><div class="factor-canvas waist-canvas"><canvas id="risk-waist-chart"></canvas></div></section>
+                    <section class="factor-chart-section"><h4><i class="fa-solid fa-venus-mars"></i> Sex</h4><div class="factor-canvas gender-canvas"><canvas id="risk-gender-chart"></canvas></div></section>
                   </div>
                   <div id="risk-factor-summary" class="risk-factor-summary"></div>
                 </div>
-                <div id="risk-global-legend" class="risk-global-legend" role="group" aria-label="ตัวเลือกชุดข้อมูลกราฟปัจจัยสุขภาพ">
+                <div id="risk-global-legend" class="risk-global-legend" role="group" aria-label="Health-factor chart dataset controls">
                   <button class="risk-global-legend__item" type="button" data-dataset-index="0" aria-pressed="true">
                     <span class="risk-global-legend__point risk-global-legend__point--fibrosis" aria-hidden="true"></span>
                     <span>Fibrosis ≥ F2</span>
@@ -253,66 +253,66 @@
                     <span>Steatosis ≥ S1</span>
                   </button>
                 </div>
-                <p class="association-note"><i class="fa-solid fa-circle-info"></i> เป็นความสัมพันธ์ภายในชุดข้อมูลนี้เท่านั้น ไม่สามารถใช้สรุปว่าปัจจัยดังกล่าวเป็นสาเหตุโดยตรง</p>
+                <p class="association-note"><i class="fa-solid fa-circle-info"></i> Associations shown are specific to this dataset and do not establish causation.</p>
               </article>
             </div>
             <article class="insight-panel">
-              <div class="insight-title"><span><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><p class="section-kicker">ข้อสังเกตอัตโนมัติ</p><h3>ข้อสังเกตจากชุดข้อมูล</h3></div></div>
+              <div class="insight-title"><span><i class="fa-solid fa-wand-magic-sparkles"></i></span><div><p class="section-kicker">Automatic Insights</p><h3>Insights from the Dataset</h3></div></div>
               <div id="insight-list" class="insight-grid"></div>
-              <p class="clinical-note"><i class="fa-solid fa-circle-info"></i> ข้อสังเกตนี้เป็นการสรุปเชิงพรรณนาจากข้อมูล ไม่ใช่คำวินิจฉัยทางการแพทย์</p>
+              <p class="clinical-note"><i class="fa-solid fa-circle-info"></i> These insights are descriptive summaries of the uploaded dataset and do not constitute a medical diagnosis.</p>
             </article>
           </div>
         </section>
 
-        <section id="page-settings" class="page" data-title="ตั้งค่าเกณฑ์ทางคลินิก">
+        <section id="page-settings" class="page" data-title="Clinical Thresholds">
           <div class="section-heading">
-            <div><p class="section-kicker">การตั้งค่าทางคลินิก</p><h2>ปรับเกณฑ์การแปลผล</h2><p>การเปลี่ยนแปลงจะคำนวณกราฟ ตาราง และผลรายบุคคลใหม่ทันที</p></div>
-            <span class="local-save-badge"><i class="fa-solid fa-hard-drive"></i> บันทึกเฉพาะบนอุปกรณ์นี้</span>
+            <div><p class="section-kicker">Clinical Configuration</p><h2>Interpretation Thresholds</h2><p>Changes immediately recalculate all charts, tables, and individual results.</p></div>
+            <span class="local-save-badge"><i class="fa-solid fa-hard-drive"></i> Stored on this device only</span>
           </div>
           <form id="settings-form" class="settings-layout">
             <article class="panel settings-card">
               <div class="settings-icon cap-icon"><i class="fa-solid fa-droplet"></i></div>
-              <div class="settings-heading"><div><h3>เกณฑ์ไขมันพอกตับ</h3><p>CAP Enhanced Mean หน่วย dB/m</p></div><span>ไขมันพอกตับ</span></div>
+              <div class="settings-heading"><div><h3>CAP Thresholds</h3><p>CAP Enhanced Mean, measured in dB/m</p></div><span>Steatosis</span></div>
               <div class="threshold-list">
-                <label class="base-threshold"><span><i class="threshold-dot dot-s0"></i><b>S0</b> ปกติ<small>กำหนดค่าสูงสุดของ S0 ได้โดยอิสระ</small></span><div class="input-unit"><strong>≤</strong><input id="cap-s0" name="capS0Max" type="number" min="0" step="1" required aria-label="ค่าสูงสุดของ S0"><em>dB/m</em></div></label>
-                <label><span><i class="threshold-dot dot-s1"></i><b>S1</b> ไขมันเล็กน้อย<small>&lt; ค่า S2</small></span><div class="input-unit"><strong>≥</strong><input id="cap-s1" name="capS1" type="number" min="1" step="1" required><em>dB/m</em></div></label>
-                <label><span><i class="threshold-dot dot-s2"></i><b>S2</b> ไขมันปานกลาง<small>&lt; ค่า S3</small></span><div class="input-unit"><strong>≥</strong><input id="cap-s2" name="capS2" type="number" min="1" step="1" required><em>dB/m</em></div></label>
-                <label><span><i class="threshold-dot dot-s3"></i><b>S3</b> ไขมันรุนแรง</span><div class="input-unit"><strong>≥</strong><input id="cap-s3" name="capS3" type="number" min="1" step="1" required><em>dB/m</em></div></label>
+                <label class="base-threshold"><span><i class="threshold-dot dot-s0"></i><b>S0</b> No Steatosis<small>Maximum value classified as S0</small></span><div class="input-unit"><strong>≤</strong><input id="cap-s0" name="capS0Max" type="number" min="0" step="1" required aria-label="Maximum value for S0"><em>dB/m</em></div></label>
+                <label><span><i class="threshold-dot dot-s1"></i><b>S1</b> Mild Steatosis<small>&lt; S2 value</small></span><div class="input-unit"><strong>≥</strong><input id="cap-s1" name="capS1" type="number" min="1" step="1" required><em>dB/m</em></div></label>
+                <label><span><i class="threshold-dot dot-s2"></i><b>S2</b> Moderate Steatosis<small>&lt; S3 value</small></span><div class="input-unit"><strong>≥</strong><input id="cap-s2" name="capS2" type="number" min="1" step="1" required><em>dB/m</em></div></label>
+                <label><span><i class="threshold-dot dot-s3"></i><b>S3</b> Severe Steatosis<small>Minimum value classified as S3</small></span><div class="input-unit"><strong>≥</strong><input id="cap-s3" name="capS3" type="number" min="1" step="1" required><em>dB/m</em></div></label>
               </div>
             </article>
 
             <article class="panel settings-card">
               <div class="settings-icon fibrosis-icon"><img class="liver-icon liver-icon--settings" src="assets/liver-icon.svg" alt="" aria-hidden="true"></div>
-              <div class="settings-heading"><div><h3>เกณฑ์พังผืดในตับ</h3><p>ความแข็งของตับ E หน่วย kPa</p></div><span>พังผืดในตับ</span></div>
+              <div class="settings-heading"><div><h3>Fibrosis Thresholds</h3><p>Median liver stiffness, measured in kPa</p></div><span>Fibrosis</span></div>
               <div class="threshold-list">
-                <label class="base-threshold"><span><i class="threshold-dot dot-f0"></i><b>F0-F1</b> ไม่มีพังผืดที่มีนัยสำคัญ<small>กำหนดค่าสูงสุดของ F0-F1 ได้โดยอิสระ</small></span><div class="input-unit"><strong>≤</strong><input id="e-f01" name="eF01Max" type="number" min="0" step="0.1" required aria-label="ค่าสูงสุดของ F0-F1"><em>kPa</em></div></label>
-                <label><span><i class="threshold-dot dot-f2"></i><b>F2</b> พังผืดปานกลาง<small>&lt; ค่า F3</small></span><div class="input-unit"><strong>≥</strong><input id="e-f2" name="eF2" type="number" min="0.1" step="0.1" required><em>kPa</em></div></label>
-                <label><span><i class="threshold-dot dot-f3"></i><b>F3</b> พังผืดรุนแรง<small>&lt; ค่า F4</small></span><div class="input-unit"><strong>≥</strong><input id="e-f3" name="eF3" type="number" min="0.1" step="0.1" required><em>kPa</em></div></label>
-                <label><span><i class="threshold-dot dot-f4"></i><b>F4</b> ตับแข็ง</span><div class="input-unit"><strong>≥</strong><input id="e-f4" name="eF4" type="number" min="0.1" step="0.1" required><em>kPa</em></div></label>
+                <label class="base-threshold"><span><i class="threshold-dot dot-f0"></i><b>F0-F1</b> No Significant Fibrosis<small>Adjust the maximum value for F0-F1 independently</small></span><div class="input-unit"><strong>≤</strong><input id="e-f01" name="eF01Max" type="number" min="0" step="0.1" required aria-label="Maximum value for F0-F1"><em>kPa</em></div></label>
+                <label><span><i class="threshold-dot dot-f2"></i><b>F2</b> Moderate Fibrosis<small>&lt; F3 value</small></span><div class="input-unit"><strong>≥</strong><input id="e-f2" name="eF2" type="number" min="0.1" step="0.1" required><em>kPa</em></div></label>
+                <label><span><i class="threshold-dot dot-f3"></i><b>F3</b> Severe Fibrosis<small>&lt; F4 value</small></span><div class="input-unit"><strong>≥</strong><input id="e-f3" name="eF3" type="number" min="0.1" step="0.1" required><em>kPa</em></div></label>
+                <label><span><i class="threshold-dot dot-f4"></i><b>F4</b> Cirrhosis<small>Minimum value classified as F4</small></span><div class="input-unit"><strong>≥</strong><input id="e-f4" name="eF4" type="number" min="0.1" step="0.1" required><em>kPa</em></div></label>
               </div>
             </article>
             <article class="panel settings-card">
               <div class="settings-icon bmi-icon"><i class="fa-solid fa-weight-scale"></i></div>
-              <div class="settings-heading"><div><h3>เกณฑ์กลุ่ม BMI</h3><p>BMI หน่วย kg/m²</p></div><span>ดัชนีมวลกาย</span></div>
+              <div class="settings-heading"><div><h3>BMI Thresholds</h3><p>Body mass index, measured in kg/m²</p></div><span>BMI</span></div>
               <div class="threshold-list">
-                <label><span><i class="threshold-dot dot-bmi-normal"></i><b>กลุ่มปกติ</b><small>ค่าเริ่มต้นของกลุ่มปกติ</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-normal-start" name="bmiNormalStart" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
-                <label><span><i class="threshold-dot dot-bmi-over"></i><b>น้ำหนักเกิน</b><small>ค่าเริ่มต้นของกลุ่มน้ำหนักเกิน</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-overweight-start" name="bmiOverweightStart" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
-                <label><span><i class="threshold-dot dot-bmi-obese1"></i><b>อ้วนระดับ 1</b><small>ค่าเริ่มต้นของกลุ่มอ้วนระดับ 1</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-obesity1-start" name="bmiObesity1Start" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
-                <label><span><i class="threshold-dot dot-bmi-obese2"></i><b>อ้วนระดับ 2</b><small>ค่าเริ่มต้นของกลุ่มอ้วนระดับ 2</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-obesity2-start" name="bmiObesity2Start" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
+                <label><span><i class="threshold-dot dot-bmi-normal"></i><b>Normal</b><small>Default value for the normal group</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-normal-start" name="bmiNormalStart" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
+                <label><span><i class="threshold-dot dot-bmi-over"></i><b>Overweight</b><small>Default value for the overweight group</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-overweight-start" name="bmiOverweightStart" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
+                <label><span><i class="threshold-dot dot-bmi-obese1"></i><b>Obesity Class I</b><small>Minimum value classified as Obesity Class I</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-obesity1-start" name="bmiObesity1Start" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
+                <label><span><i class="threshold-dot dot-bmi-obese2"></i><b>Obesity Class II</b><small>Minimum value classified as Obesity Class II</small></span><div class="input-unit"><strong>≥</strong><input id="bmi-obesity2-start" name="bmiObesity2Start" type="number" min="1" step="0.1" required><em>kg/m²</em></div></label>
               </div>
             </article>
             <article class="panel settings-card">
               <div class="settings-icon waist-icon"><i class="fa-solid fa-ruler"></i></div>
-              <div class="settings-heading"><div><h3>เกณฑ์รอบเอวเสี่ยงสูง</h3><p>แยกตามเพศ หน่วยเซนติเมตร</p></div><span>รอบเอว</span></div>
+              <div class="settings-heading"><div><h3>Elevated Waist Circumference Thresholds</h3><p>Sex-specific thresholds, measured in centimetres</p></div><span>Waist Circumference</span></div>
               <div class="threshold-list waist-threshold-list">
-                <label><span><i class="threshold-dot dot-waist-male"></i><b>เพศชาย</b><small>รอบเอวที่เริ่มจัดเป็นความเสี่ยงสูง</small></span><div class="input-unit"><strong>≥</strong><input id="waist-male-high" name="waistMaleHigh" type="number" min="1" step="0.1" required><em>cm</em></div></label>
-                <label><span><i class="threshold-dot dot-waist-female"></i><b>เพศหญิง</b><small>รอบเอวที่เริ่มจัดเป็นความเสี่ยงสูง</small></span><div class="input-unit"><strong>≥</strong><input id="waist-female-high" name="waistFemaleHigh" type="number" min="1" step="0.1" required><em>cm</em></div></label>
+                <label><span><i class="threshold-dot dot-waist-male"></i><b>Male</b><small>Threshold for elevated waist circumference</small></span><div class="input-unit"><strong>≥</strong><input id="waist-male-high" name="waistMaleHigh" type="number" min="1" step="0.1" required><em>cm</em></div></label>
+                <label><span><i class="threshold-dot dot-waist-female"></i><b>Female</b><small>Threshold for elevated waist circumference</small></span><div class="input-unit"><strong>≥</strong><input id="waist-female-high" name="waistFemaleHigh" type="number" min="1" step="0.1" required><em>cm</em></div></label>
               </div>
-              <div class="threshold-explain"><i class="fa-solid fa-circle-info"></i><p>ค่ารอบเอวจะใช้ร่วมกับเพศเพื่อแบ่งกลุ่ม “รอบเอวสูง/ไม่สูง” ในหน้าวิเคราะห์ หากไม่มีข้อมูลเพศจะไม่คำนวณกลุ่มนี้</p></div>
+              <div class="threshold-explain"><i class="fa-solid fa-circle-info"></i><p>Waist circumference is interpreted using the corresponding sex-specific threshold. Classification is unavailable when sex is unspecified.</p></div>
             </article>
             <div class="settings-actions">
-              <div><strong><i class="fa-solid fa-shield-halved"></i> การจัดเก็บที่เป็นส่วนตัว</strong><p>บันทึกเฉพาะค่าเกณฑ์ลง localStorage เท่านั้น ไม่มีข้อมูลผู้รับการตรวจถูกบันทึก</p></div>
-              <div><button id="reset-settings-btn" class="btn btn-secondary" type="button">คืนค่าเริ่มต้น</button><button class="btn btn-primary" type="submit"><i class="fa-solid fa-check"></i> บันทึกและคำนวณใหม่</button></div>
+              <div><strong><i class="fa-solid fa-shield-halved"></i> Local Settings Storage</strong><p>Only threshold settings are saved to localStorage. Patient data is never persisted.</p></div>
+              <div><button id="reset-settings-btn" class="btn btn-secondary" type="button">Reset to Defaults</button><button class="btn btn-primary" type="submit"><i class="fa-solid fa-check"></i> Save and Recalculate</button></div>
             </div>
           </form>
         </section>
@@ -320,36 +320,36 @@
     </main>
   </div>
 
-  <nav class="mobile-nav" aria-label="เมนูบนมือถือ">
-    <button class="active" data-page="overview"><i class="fa-solid fa-chart-pie"></i><span>ภาพรวม</span></button>
-    <button data-page="patients"><i class="fa-regular fa-address-card"></i><span>รายบุคคล</span></button>
-    <button data-page="analysis"><i class="fa-solid fa-chart-line"></i><span>วิเคราะห์</span></button>
-    <button data-page="settings"><i class="fa-solid fa-sliders"></i><span>ตั้งค่า</span></button>
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="active" data-page="overview"><i class="fa-solid fa-chart-pie"></i><span>Overview</span></button>
+    <button data-page="patients"><i class="fa-regular fa-address-card"></i><span>Patients</span></button>
+    <button data-page="analysis"><i class="fa-solid fa-chart-line"></i><span>Analytics</span></button>
+    <button data-page="settings"><i class="fa-solid fa-sliders"></i><span>Thresholds</span></button>
   </nav>
 
   <div id="upload-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="upload-title" aria-hidden="true">
     <div class="modal-backdrop" data-close-upload></div>
     <div class="modal-card">
-      <button class="modal-close" type="button" data-close-upload aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+      <button class="modal-close" type="button" data-close-upload aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
       <span class="modal-icon"><i class="fa-solid fa-file-excel"></i></span>
-      <h2 id="upload-title">นำเข้าข้อมูล FibroScan</h2>
-      <p>เลือกได้หลายไฟล์ ระบบจะรวมรอบตรวจและอ่านข้อมูลทั้งหมดภายในเบราว์เซอร์เท่านั้น</p>
+      <h2 id="upload-title">Import FibroScan Data</h2>
+      <p>Select one or more files. Examination data is combined and processed entirely within your browser.</p>
       <div id="drop-zone" class="drop-zone" tabindex="0" role="button">
         <i class="fa-solid fa-cloud-arrow-up"></i>
-        <strong>ลากไฟล์หนึ่งไฟล์หรือหลายไฟล์มาวางที่นี่</strong>
-        <span>หรือคลิกเพื่อเลือกหลายไฟล์จากเครื่อง</span>
-        <small>.XLSX, .XLS · สูงสุดไฟล์ละ 25 MB</small>
+        <strong>Drag one or multiple files here</strong>
+        <span>or click to select multiple files from your device</span>
+        <small>.XLSX, .XLS · Maximum file size: 25 MB</small>
       </div>
       <input id="excel-input" type="file" accept=".xlsx,.xls" multiple hidden>
       <div class="expected-columns">
-        <strong>คอลัมน์ที่ระบบรองรับ</strong>
-        <p>Exam file name · First name · Last name · CAP Enhanced Mean (dB/m) · E Median (kPa) · Height · Weight · เพศ · รอบเอว · Exam date (day) · Exam date (month) · Exam date (year) · ชื่อผู้ตรวจ</p>
+        <strong>Supported Columns</strong>
+        <p>Exam file name · First name · Last name · CAP Enhanced Mean (dB/m) · E Median (kPa) · Height · Weight · Gender · Waist Circumference · Exam date (day) · Exam date (month) · Exam date (year) · Examiner Name</p>
       </div>
-      <div class="modal-privacy"><i class="fa-solid fa-shield-halved"></i><span><strong>ข้อมูลไม่ออกจากอุปกรณ์ของคุณ</strong><small>ระบบไม่อัปโหลดหรือจัดเก็บไฟล์บนเซิร์ฟเวอร์</small></span></div>
+      <div class="modal-privacy"><i class="fa-solid fa-shield-halved"></i><span><strong>Your data stays on your device</strong><small>The system does not upload or store files on the server</small></span></div>
     </div>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"><i class="fa-solid fa-circle-check"></i><span>ดำเนินการสำเร็จ</span></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"><i class="fa-solid fa-circle-check"></i><span>Operation completed successfully</span></div>
   <div id="pdf-report" class="pdf-report" aria-hidden="true"></div>
 </body>
 </html>

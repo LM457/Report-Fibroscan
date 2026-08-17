@@ -15,12 +15,13 @@
   --surface: #ffffff;
   --canvas: #f4f7f7;
   --shadow: 0 16px 45px rgba(23, 50, 77, .08);
-  --font-thai: "IBM Plex Sans Thai", sans-serif;
+  --font-ui: "IBM Plex Sans", Arial, sans-serif;
+  --font-thai: var(--font-ui); /* Backward-compatible alias for existing PDF typography rules. */
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-thai); font-size: 15px; line-height: 1.55; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.55; }
 button, input, select { font: inherit; }
 button { color: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
@@ -109,7 +110,7 @@ h1, h2, h3, p { margin-top: 0; }
 .scan-foot { display: flex; align-items: center; justify-content: space-between; color: #7894a4; font: 700 9px Manrope, sans-serif; letter-spacing: 1.5px; }
 .scan-foot b { padding: 4px 10px; border-radius: 6px; color: #17324d; background: var(--lime); font-size: 12px; }
 .float-chip { position: absolute; z-index: 3; padding: 15px 18px; border: 1px solid rgba(255,255,255,.13); border-radius: 14px; color: #fff; background: rgba(10,35,50,.85); box-shadow: 0 18px 35px rgba(0,0,0,.22); backdrop-filter: blur(10px); }
-.chip-cap { top: 20%; right: 6%; }.chip-cap small, .chip-cap strong { display: block; }.chip-cap small { color: #789bac; font: 700 8px Manrope; letter-spacing: 1.3px; }.chip-cap strong { margin-top: 4px; font: 800 20px Manrope; }.chip-cap em { color: #8aa3b0; font: 500 9px var(--font-thai); }
+.chip-cap { top: 20%; right: 6%; }.chip-cap small, .chip-cap strong { display: block; }.chip-cap small { color: #789bac; font: 700 8px Manrope; letter-spacing: 1.3px; }.chip-cap strong { margin-top: 4px; font: 800 20px Manrope; }.chip-cap em { color: #8aa3b0; font: 500 9px var(--font-ui); }
 .chip-secure { bottom: 17%; left: 9%; display: flex; gap: 10px; align-items: center; }.chip-secure > i { display: grid; width: 31px; height: 31px; place-items: center; border-radius: 50%; color: #17324d; background: var(--lime); }.chip-secure small, .chip-secure strong { display: block; }.chip-secure small { color: #8ba6b4; font-size: 8px; }.chip-secure strong { font: 700 11px Manrope; }
 
 .section-heading { display: flex; gap: 20px; align-items: flex-end; justify-content: space-between; margin: 4px 0 24px; }
@@ -139,7 +140,7 @@ h1, h2, h3, p { margin-top: 0; }
 .kpi-teal .kpi-icon { color: var(--teal); background: #e4f7f2; }.kpi-amber .kpi-icon { color: #a76b06; background: #fff4df; }.kpi-coral .kpi-icon { color: var(--coral); background: #fff0ed; }.kpi-blue .kpi-icon { color: var(--blue); background: #edf4ff; }.kpi-lime .kpi-icon { color: #65910a; background: #f1fadf; }
 .kpi-label { color: #617584; font-size: 12px; font-weight: 500; }
 .kpi-value { display: flex; gap: 7px; align-items: baseline; margin: 14px 0 5px; color: var(--navy); }
-.kpi-value strong { font: 800 31px/1 Manrope, var(--font-thai); letter-spacing: -1.3px; }.kpi-value span { color: #7c8e99; font-size: 10px; }
+.kpi-value strong { font: 800 31px/1 Manrope, var(--font-ui); letter-spacing: -1.3px; }.kpi-value span { color: #7c8e99; font-size: 10px; }
 .kpi-card > p { margin: 0; color: #82939f; font-size: 10px; }
 .chart-grid { display: grid; grid-template-columns: .82fr 1.18fr; gap: 16px; margin-bottom: 16px; }
 .panel { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 9px 28px rgba(23, 50, 77, .045); }
@@ -168,7 +169,7 @@ td small { color: #94a1aa; font-size: 8px; }
 .person-cell { display: flex; gap: 10px; align-items: center; }
 .person-cell > span, .patient-avatar { display: grid; flex: 0 0 32px; height: 32px; place-items: center; border-radius: 9px; color: var(--teal); background: #e2f5f1; font: 700 9px Manrope; }
 .person-cell strong, .person-cell small { display: block; }.person-cell strong { color: var(--navy); font-size: 11px; }.person-cell small { margin-top: 1px; }
-.patient-id-cell { color: var(--teal); font: 700 10px Manrope, var(--font-thai); }.missing-name { color: #b46a22 !important; font-style: italic; }
+.patient-id-cell { color: var(--teal); font: 700 10px Manrope, var(--font-ui); }.missing-name { color: #b46a22 !important; font-style: italic; }
 .risk-badge { display: inline-flex; gap: 6px; align-items: center; padding: 5px 8px; border-radius: 99px; font-size: 9px; font-weight: 600; }
 .risk-badge i { width: 5px; height: 5px; border-radius: 50%; }
 .risk-badge.low { color: #28756d; background: #e9f7f4; }.risk-badge.low i { background: var(--teal-2); }.risk-badge.medium { color: #97630b; background: #fff6df; }.risk-badge.medium i { background: var(--amber); }.risk-badge.high { color: #b24b44; background: #ffefec; }.risk-badge.high i { background: var(--coral); }
@@ -194,7 +195,7 @@ td small { color: #94a1aa; font-size: 8px; }
 .health-header { display: flex; gap: 20px; align-items: center; justify-content: space-between; padding: 24px 27px; border-bottom: 1px solid #e9eeef; background: linear-gradient(120deg, #f6fbfa, #fff); }
 .health-header-actions { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }.btn-patient-pdf { min-height: 35px; padding: 7px 11px; font-size: 9px; }
 .health-person { display: flex; gap: 15px; align-items: center; }.health-person > span { display: grid; width: 50px; height: 50px; place-items: center; border-radius: 15px; color: var(--navy); background: var(--lime); font: 800 13px Manrope; }.health-person p { margin: 0; color: var(--teal); font-size: 9px; font-weight: 700; letter-spacing: .7px; }.health-person h2 { margin: 1px 0; color: var(--navy); font-size: 20px; }.health-person small { color: #83939d; font-size: 9px; }
-.health-identity { display: grid; gap: 3px; }.identity-row { display: flex; gap: 8px; align-items: baseline; }.identity-row > small { min-width: 85px; color: #81939d; }.identity-row > strong { color: var(--teal); font: 700 11px Manrope, var(--font-thai); }.patient-name-row { align-items: center; }.patient-name-row h2 { margin: 0; }
+.health-identity { display: grid; gap: 3px; }.identity-row { display: flex; gap: 8px; align-items: baseline; }.identity-row > small { min-width: 85px; color: #81939d; }.identity-row > strong { color: var(--teal); font: 700 11px Manrope, var(--font-ui); }.patient-name-row { align-items: center; }.patient-name-row h2 { margin: 0; }
 .health-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 22px 25px 15px; }
 .metric-card { position: relative; padding: 20px; overflow: hidden; border: 1px solid #e5ecec; border-radius: 15px; background: #fbfcfc; }.metric-card::after { position: absolute; right: -25px; bottom: -40px; width: 110px; height: 110px; border-radius: 50%; content: ""; opacity: .08; }.fibrosis-metric::after { background: var(--teal); }.cap-metric::after { background: var(--amber); }
 .metric-heading { display: flex; align-items: center; }.metric-heading > span { display: grid; width: 34px; height: 34px; margin-right: 9px; place-items: center; border-radius: 10px; }.fibrosis-metric .metric-heading > span { color: var(--teal); background: #e6f6f2; }.cap-metric .metric-heading > span { color: var(--amber); background: #fff4df; }.metric-heading div { flex: 1; }.metric-heading small, .metric-heading strong { display: block; }.metric-heading small { color: #8a9ba4; font-size: 8px; }.metric-heading strong { color: var(--navy); font-size: 12px; }
@@ -222,7 +223,7 @@ td small { color: #94a1aa; font-size: 8px; }
 .factor-summary-card p em { color: var(--teal); font-style: normal; font-weight: 700; }
 .factor-summary-card p em.higher { color: var(--coral); }.association-note { margin: 8px 0 0; color: #7d8f99; font-size: 9px; }.association-note i { margin-right: 5px; color: var(--teal); }
 .risk-global-legend { display: flex; gap: 16px; align-items: center; justify-content: center; margin-top: 16px; padding: 8px 0; }
-.risk-global-legend__item { display: inline-flex; gap: 7px; align-items: center; padding: 4px 0; border: 0; color: #617784; background: transparent; font: 400 11px/1.3 Tahoma, "Leelawadee UI", var(--font-thai); cursor: pointer; transition: color .16s ease, opacity .16s ease; }
+.risk-global-legend__item { display: inline-flex; gap: 7px; align-items: center; padding: 4px 0; border: 0; color: #617784; background: transparent; font: 400 11px/1.3 var(--font-ui); cursor: pointer; transition: color .16s ease, opacity .16s ease; }
 .risk-global-legend__item:focus-visible { outline: 2px solid rgba(15,118,110,.3); outline-offset: 4px; border-radius: 4px; }
 .risk-global-legend__point { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; transition: opacity .16s ease; }
 .risk-global-legend__point--fibrosis { background: var(--teal, #0f766e); }
@@ -251,7 +252,7 @@ body.modal-open { overflow: hidden; }
 /* Screen-only legibility: keep the A4/PDF typography and dimensions unchanged. */
 @media screen {
   body > .app-shell {
-    font-family: "Leelawadee UI", "IBM Plex Sans Thai", Tahoma, sans-serif;
+    font-family: "IBM Plex Sans", Arial, sans-serif;
     font-kerning: normal;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -553,7 +554,7 @@ body.modal-open { overflow: hidden; }
 
 .patient-badges {
     display: flex;
-    flex-direction: column; /* เปลี่ยนเป็น row ได้ถ้าปุ่มมีความกว้างพอ */
-    gap: 4px; /* ระยะห่างระหว่างป้าย F และ S */
-    align-items: flex-end; /* ดันให้ป้ายชิดขอบขวา */
+    flex-direction: column; /* Stack stage badges when horizontal space is limited. */
+    gap: 4px;
+    align-items: flex-end;
 }

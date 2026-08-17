@@ -1,4 +1,4 @@
-/* ค่าตั้งต้นและ state ส่วนกลางของแอป */
+/* Application defaults and shared in-memory state. */
 window.FibroApp = {
   DEFAULT_SETTINGS: {
     capS0Max: 248,

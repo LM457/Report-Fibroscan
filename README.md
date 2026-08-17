@@ -1,99 +1,97 @@
-# FibroSight — FibroScan Data Analytics Dashboard
+# FibroSight - FibroScan Data Analytics Dashboard
 
-เว็บแดชบอร์ดสำหรับวิเคราะห์ผลตรวจ FibroScan จากไฟล์ Excel ทำงานแบบ Client-Side / Stateless โดยข้อมูลผู้รับการตรวจจะถูกประมวลผลภายในหน่วยความจำของเบราว์เซอร์เท่านั้น ไม่มี Backend และไม่มีฐานข้อมูล
+FibroSight is a privacy-first dashboard for analysing FibroScan examination data from Excel files. It is a fully client-side, stateless application: patient data is processed in browser memory without a backend or database.
 
-## ความสามารถหลัก
+## Key Features
 
-- นำเข้าไฟล์ Excel `.xlsx` หรือ `.xls` ได้หลายไฟล์ในครั้งเดียว
-- รวมข้อมูลจากหลายวันและหลายรอบตรวจเข้าด้วยกัน
-- แสดงจำนวนผู้ป่วยไม่ซ้ำและจำนวนครั้งตรวจแยกจากกัน
-- เลือกวิเคราะห์ได้ทั้ง `ทุกรอบตรวจ` และ `ผลล่าสุดต่อผู้ป่วย`
-- วิเคราะห์ระดับ Fibrosis, Steatosis, BMI, รอบเอว และปัจจัยด้านเพศ
-- คำนวณ BMI จาก `Height` และ `Weight`
-- ค้นหา กรอง และดูประวัติการตรวจรายบุคคล
-- ปรับเกณฑ์ทางคลินิกและบันทึกเกณฑ์ไว้ใน `localStorage`
-- ส่งออกรายงาน PDF ภาพรวมและรายบุคคล
-- ไม่มีการส่งหรือบันทึกข้อมูลผู้ป่วยไปยังเซิร์ฟเวอร์
+- Import one or multiple `.xlsx` or `.xls` files.
+- Combine examinations performed on different dates.
+- Report unique patient counts separately from examination counts.
+- Analyse either all examinations or the latest examination per patient.
+- Classify liver fibrosis, hepatic steatosis, BMI, and waist circumference.
+- Calculate BMI from height and weight.
+- Search, filter, and review longitudinal patient examination history.
+- Configure clinical interpretation thresholds and retain settings in `localStorage`.
+- Export cohort-level and individual PDF reports.
+- Process all patient data locally without transmitting it to a server.
 
-## กติกาการเชื่อมข้อมูลหลายไฟล์
+## Cross-File Patient Matching
 
-ระบบปัจจุบันใช้ `First name` และ `Last name` เป็นตัวเชื่อมผู้รับการตรวจข้ามไฟล์ โดยปรับ Unicode ตัวพิมพ์ และช่องว่างก่อนนำมาเปรียบเทียบ
+The current implementation matches records across files using the normalised `First name` and `Last name` values. Unicode, letter case, and repeated whitespace are normalised before comparison.
 
-ตัวอย่าง:
+Example:
 
 ```text
-สมชาย ใจดี | 1 สิงหาคม | E 5.9 | CAP 250
-สมชาย ใจดี | 2 สิงหาคม | E 5.9 | CAP 250
+John Smith | 1 August | E 5.9 | CAP 250
+John Smith | 2 August | E 5.9 | CAP 250
 ```
 
-ผลลัพธ์คือ **ผู้ป่วย 1 คน และ 2 ครั้งตรวจ** เพราะวันที่ตรวจแตกต่างกัน
+This is counted as **one unique patient and two examinations** because the examination dates differ.
 
-รายการจะถูกตัดเป็นข้อมูลซ้ำเมื่อค่าต่อไปนี้ตรงกันทั้งหมด:
+A record is treated as an exact duplicate only when all of the following match:
 
-- ชื่อและนามสกุล
-- วันที่ตรวจ
+- First and last name
+- Examination date
 - E Median (kPa)
 - CAP Enhanced Mean (dB/m)
 
-หากชื่อหรือนามสกุลไม่ครบ ระบบจะแยกรายการนั้นออกจากผู้ป่วยรายอื่นเพื่อป้องกันการรวมผิดคน
+If either the first or last name is missing, the record is kept separate to reduce the risk of incorrectly merging different patients.
 
-> คำเตือน: ชื่อ–นามสกุลไม่ใช่รหัสเฉพาะ บุคคลต่างคนอาจมีชื่อเหมือนกัน และการสะกดต่างกันจะทำให้ระบบมองเป็นคนละคน ควรตรวจสอบคุณภาพข้อมูลต้นทางก่อนใช้งานจริง
+> Important: names are not unique identifiers. Different people may share the same name, while spelling differences may prevent records from being matched. Source-data quality should be reviewed before clinical or operational use.
 
-## โครงสร้างไฟล์ Excel
+## Expected Excel Columns
 
-หัวคอลัมน์ที่รองรับโดยตรง:
-
-| ข้อมูล | ชื่อคอลัมน์ |
+| Data element | Column heading |
 |---|---|
-| รหัสอ้างอิงการตรวจ | `Exam file name` |
-| ชื่อ | `First name` |
-| นามสกุล | `Last name` |
-| ค่าไขมันในตับ | `CAP Enhanced Mean (dB/m)` |
-| ค่าความแข็งของตับ | `E Median (kPa)` |
-| ส่วนสูง | `Height` |
-| น้ำหนัก | `Weight` |
-| เพศ | `Gender` |
-| รอบเอว | `Waist Circumference` |
-| วันตรวจ | `Exam date (day)` |
-| เดือนตรวจ | `Exam date (month)` |
-| ปีตรวจ | `Exam date (year)` |
-| ผู้ตรวจ | `Examiner Name` |
+| Examination reference | `Exam file name` |
+| First name | `First name` |
+| Last name | `Last name` |
+| Hepatic attenuation | `CAP Enhanced Mean (dB/m)` |
+| Liver stiffness | `E Median (kPa)` |
+| Height | `Height` |
+| Weight | `Weight` |
+| Sex | `Gender` |
+| Waist circumference | `Waist Circumference` |
+| Examination day | `Exam date (day)` |
+| Examination month | `Exam date (month)` |
+| Examination year | `Exam date (year)` |
+| Examiner | `Examiner Name` |
 
-ไฟล์ตรวจพื้นฐานสามารถมีเฉพาะค่า E หรือ CAP ได้ ส่วนการวิเคราะห์ BMI รอบเอว และเพศจะแสดงค่าว่างหรือข้อความแจ้งข้อมูลไม่ครบเมื่อไม่มีข้อมูลรองรับ
+A basic liver assessment may contain E Median and/or CAP without anthropometric data. BMI-, waist-, and sex-dependent analyses remain blank when the required data is unavailable.
 
-## เกณฑ์เริ่มต้น
+## Default Interpretation Thresholds
 
-### Fibrosis
+### Liver Fibrosis
 
-| ระดับ | เกณฑ์ E Median |
+| Stage | E Median threshold |
 |---|---:|
-| F0–F1 | `< 7.0 kPa` |
-| F2 | `≥ 7.0 kPa` |
-| F3 | `≥ 10.0 kPa` |
-| F4 | `≥ 13.0 kPa` |
+| F0-F1 - No Significant Fibrosis | `< 7.0 kPa` |
+| F2 - Moderate Fibrosis | `≥ 7.0 kPa` |
+| F3 - Severe Fibrosis | `≥ 10.0 kPa` |
+| F4 - Cirrhosis | `≥ 13.0 kPa` |
 
-### Steatosis
+### Hepatic Steatosis
 
-| ระดับ | เกณฑ์ CAP |
+| Grade | CAP threshold |
 |---|---:|
-| S0 | `≤ 248 dB/m` |
-| S1 | `249–268 dB/m` |
-| S2 | `269–280 dB/m` |
-| S3 | `≥ 281 dB/m` |
+| S0 - No Steatosis | `≤ 248 dB/m` |
+| S1 - Mild Steatosis | `249-268 dB/m` |
+| S2 - Moderate Steatosis | `269-280 dB/m` |
+| S3 - Severe Steatosis | `≥ 281 dB/m` |
 
-เกณฑ์สามารถแก้ไขได้จากหน้า **ปรับเกณฑ์การแปลผล** ภายในเว็บไซต์
+Thresholds can be changed on the **Clinical Thresholds** page. All charts, tables, and reports are recalculated immediately after saving.
 
-## เทคโนโลยี
+## Technology
 
-- HTML5, CSS3 และ Vanilla JavaScript
-- [SheetJS](https://sheetjs.com/) สำหรับอ่าน Excel
-- [Chart.js](https://www.chartjs.org/) สำหรับกราฟ
-- [html2canvas](https://html2canvas.hertzen.com/) และ [jsPDF](https://github.com/parallax/jsPDF) สำหรับสร้าง PDF
-- Font Awesome และ Google Fonts
+- HTML5, CSS3, and Vanilla JavaScript
+- [SheetJS](https://sheetjs.com/) for Excel parsing
+- [Chart.js](https://www.chartjs.org/) for data visualisation
+- [html2canvas](https://html2canvas.hertzen.com/) and [jsPDF](https://github.com/parallax/jsPDF) for PDF generation
+- Font Awesome and Google Fonts
 
-ไลบรารีภายนอกถูกโหลดผ่าน CDN จึงต้องเชื่อมต่ออินเทอร์เน็ตขณะเปิดเว็บไซต์
+External libraries are loaded through CDNs, so an internet connection is required when opening the application.
 
-## โครงสร้างโปรเจกต์
+## Project Structure
 
 ```text
 Web Report Fibroscan/
@@ -102,53 +100,53 @@ Web Report Fibroscan/
 ├── css/
 │   └── styles.css
 ├── js/
-│   ├── app.js         # SPA, event และการรวมหลายไฟล์
-│   ├── charts.js      # การสร้างกราฟ
-│   ├── config.js      # state และเกณฑ์เริ่มต้น
-│   ├── data.js        # อ่าน Excel คำนวณ และจัดกลุ่มข้อมูล
-│   ├── logo-data.js   # ข้อมูลโลโก้สำหรับรายงาน
-│   └── report.js      # สร้างและส่งออก PDF
+│   ├── app.js         # SPA navigation, events, and multi-file aggregation
+│   ├── charts.js      # Chart.js visualisations
+│   ├── config.js      # Application state and default thresholds
+│   ├── data.js        # Excel parsing, calculations, and classifications
+│   ├── logo-data.js   # Embedded branding for PDF reports
+│   └── report.js      # Cohort and individual PDF generation
 ├── index.html
 ├── valorhealth-removebg.png
 └── README.md
 ```
 
-## การเปิดใช้งานบนเครื่อง
+## Local Use
 
-สามารถเปิด `index.html` โดยตรง หรือใช้ Local Server เพื่อหลีกเลี่ยงข้อจำกัดของเบราว์เซอร์:
+Open `index.html` directly, or serve the project from a local HTTP server:
 
 ```bash
 python -m http.server 8000
 ```
 
-จากนั้นเปิด:
+Then visit:
 
 ```text
 http://localhost:8000
 ```
 
-## การ Deploy ด้วย GitHub Pages
+## Deploying with GitHub Pages
 
-1. สร้าง Repository ใหม่บน GitHub
-2. อัปโหลดไฟล์และโฟลเดอร์ทั้งหมดในโปรเจกต์ โดยให้ `index.html` อยู่ที่ root
-3. เปิด `Settings` → `Pages`
-4. ที่ `Build and deployment` เลือก `Deploy from a branch`
-5. เลือก Branch `main` และโฟลเดอร์ `/ (root)`
-6. กด `Save` และรอ GitHub สร้าง URL ของเว็บไซต์
+1. Create a GitHub repository.
+2. Upload the complete project, keeping `index.html` in the repository root.
+3. Open **Settings** → **Pages**.
+4. Under **Build and deployment**, select **Deploy from a branch**.
+5. Select the `main` branch and `/ (root)` directory.
+6. Select **Save** and wait for GitHub to publish the site URL.
 
-โปรเจกต์นี้ไม่ต้องตั้งค่า Environment Variable, API Key, Backend หรือฐานข้อมูล
+No environment variables, API keys, backend services, or databases are required.
 
-## ความเป็นส่วนตัวและ PDPA
+## Privacy and PDPA Considerations
 
-- ข้อมูล Excel อยู่ใน RAM ของแท็บเบราว์เซอร์
-- ข้อมูลผู้ป่วยไม่ถูกบันทึกลง `localStorage`
-- มีเพียงค่าเกณฑ์การแปลผลที่ถูกเก็บใน `localStorage`
-- เมื่อรีเฟรช ปิดแท็บ หรือกดล้างข้อมูล ข้อมูลที่นำเข้าจะถูกลบจากหน่วยความจำ
-- PDF ถูกสร้างบนอุปกรณ์ของผู้ใช้งาน
+- Imported Excel data remains in the browser tab's memory.
+- Patient data is not stored in `localStorage`.
+- Only clinical threshold settings are retained in `localStorage`.
+- Imported data is removed when the page is refreshed, the tab is closed, or **Clear Data** is selected.
+- PDF files are generated locally on the user's device.
 
-แม้ตัวแอปจะไม่ส่งข้อมูลไปยังเซิร์ฟเวอร์ ผู้ดูแลระบบควรกำหนดนโยบายการจัดเก็บไฟล์ Excel และ PDF ที่ดาวน์โหลดให้เหมาะสมกับ PDPA ขององค์กร
+Although the application does not transmit patient data, organisations remain responsible for the secure storage and handling of source Excel files and downloaded PDF reports under their applicable privacy and PDPA policies.
 
-## ข้อจำกัดในการแปลผล
+## Clinical Interpretation Disclaimer
 
-ผลลัพธ์เป็นการสรุปเชิงพรรณนาจากชุดข้อมูล ไม่ใช่การวินิจฉัยทางการแพทย์ และไม่สามารถใช้ยืนยันว่าปัจจัยด้าน BMI รอบเอว หรือเพศเป็นสาเหตุโดยตรงของ Fibrosis หรือ Steatosis ได้
+Outputs are descriptive summaries of the uploaded dataset. They do not constitute a diagnosis, treatment recommendation, or evidence that BMI, waist circumference, or sex directly causes fibrosis or steatosis. Results should be interpreted by qualified healthcare professionals alongside the complete clinical context.
 
