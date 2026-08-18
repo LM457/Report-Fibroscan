@@ -28,6 +28,7 @@ window.FibroApp = {
     charts: {},
     selectedPatientIndex: null,
     tablePage: 1,
+    showIncompleteOnly: false,
     activePage: 'overview'
   },
   colors: {

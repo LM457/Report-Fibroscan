@@ -99,6 +99,7 @@ h1, h2, h3, p { margin-top: 0; }
 .liver-icon--empty { width: 25px; height: 25px; }
 .liver-icon--settings { width: 20px; height: 20px; }
 .liver-icon--metric { width: 17px; height: 17px; }
+.liver-icon--kpi { width: 17px; height: 17px; }
 .liver-icon--pdf { width: 11px; height: 11px; margin-right: 5px; vertical-align: -2px; }
 .scan-head small { padding: 4px 7px; border-radius: 6px; color: var(--lime); background: rgba(163,230,53,.1); }
 .scan-kpi { display: flex; align-items: baseline; margin: 26px 0 7px; }
@@ -172,10 +173,12 @@ td small { color: #94a1aa; font-size: 8px; }
 .patient-id-cell { color: var(--teal); font: 700 10px Manrope, var(--font-ui); }.missing-name { color: #b46a22 !important; font-style: italic; }
 .risk-badge { display: inline-flex; gap: 6px; align-items: center; padding: 5px 8px; border-radius: 99px; font-size: 9px; font-weight: 600; }
 .risk-badge i { width: 5px; height: 5px; border-radius: 50%; }
-.risk-badge.low { color: #28756d; background: #e9f7f4; }.risk-badge.low i { background: var(--teal-2); }.risk-badge.medium { color: #97630b; background: #fff6df; }.risk-badge.medium i { background: var(--amber); }.risk-badge.high { color: #b24b44; background: #ffefec; }.risk-badge.high i { background: var(--coral); }
+.risk-badge.low { color: #28756d; background: #e9f7f4; }.risk-badge.low i { background: var(--teal-2); }.risk-badge.medium { color: #97630b; background: #fff6df; }.risk-badge.medium i { background: var(--amber); }.risk-badge.high { color: #b24b44; background: #ffefec; }.risk-badge.high i { background: var(--coral); }.risk-badge.neutral { color: #667b87; background: #eef2f3; }.risk-badge.neutral i { background: #94a3ad; }
 .empty-row { height: 100px; color: #8b9aa3; text-align: center; cursor: default; }
-.pagination { display: flex; gap: 10px; align-items: center; justify-content: flex-end; padding: 13px 20px; border-top: 1px solid #edf1f2; color: #768995; font-size: 10px; }
-.pagination button { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid #dfe7e8; border-radius: 7px; background: #fff; cursor: pointer; }.pagination button:disabled { opacity: .38; cursor: default; }
+.pagination { display: flex; gap: 14px; align-items: center; justify-content: space-between; padding: 13px 20px; border-top: 1px solid #edf1f2; color: #768995; font-size: 10px; }
+.pagination-pages { display: flex; gap: 10px; align-items: center; }.pagination button { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid #dfe7e8; border-radius: 7px; background: #fff; cursor: pointer; }.pagination button:disabled { opacity: .38; cursor: default; }
+.pagination .incomplete-data-toggle { display: inline-flex; gap: 7px; width: auto; min-width: 0; height: 30px; padding: 0 10px; color: #8b5c0c; background: #fff9e9; border-color: #efddb2; font: 600 9px var(--font-ui); }.incomplete-data-toggle b { min-width: 18px; padding: 2px 5px; border-radius: 99px; color: #8b5c0c; background: #f6e7bd; font-size: 8px; }.pagination .incomplete-data-toggle.active { color: #fff; background: #b87810; border-color: #b87810; }.incomplete-data-toggle.active b { color: #8b5c0c; background: #fff4d6; }
+.data-quality-status { display: inline-flex; gap: 5px; align-items: center; padding: 4px 7px; border-radius: 99px; font-size: 8px; font-weight: 600; white-space: nowrap; }.data-quality-status.issue { color: #9a6812; background: #fff4d8; }.data-quality-status.complete { color: #28756d; background: #e9f7f4; }.data-quality-details { display: block; max-width: 180px; margin-top: 4px; color: #8a99a3; font-size: 7px; line-height: 1.4; white-space: normal; }
 
 .no-data-card { display: grid; max-width: 560px; min-height: 340px; margin: 55px auto; padding: 40px; place-items: center; align-content: center; border: 1px dashed #cfdcdd; border-radius: 20px; background: #fff; text-align: center; }
 .no-data-card > span { display: grid; width: 62px; height: 62px; margin-bottom: 16px; place-items: center; border-radius: 19px; color: var(--teal); background: var(--mint); font-size: 23px; }.no-data-card h3 { margin: 0 0 5px; color: var(--navy); }.no-data-card p { margin-bottom: 20px; color: var(--muted); font-size: 12px; }

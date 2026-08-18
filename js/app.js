@@ -168,6 +168,7 @@
     App.state.fileName = '';
     App.state.selectedFileId = 'all';
     App.state.selectedPatientIndex = null;
+    App.state.showIncompleteOnly = false;
     Object.values(App.state.charts).forEach(chart => chart.destroy());
     App.state.charts = {};
     renderAll();
@@ -245,7 +246,7 @@
     const selectedFile = App.state.files.find(file => file.id === App.state.selectedFileId);
     const liverData = data.filter(patient => patient.cap !== null || patient.stiffness !== null);
     const highRisk = liverData.filter(App.isHighRisk);
-    const averageBMI = App.average(data.map(patient => patient.bmi));
+    const averageE = App.average(data.map(patient => patient.stiffness));
     const averageCAP = App.average(data.map(patient => patient.cap));
     const complete = data.filter(patient => patient.height !== null && patient.weight !== null && patient.bmi !== null && patient.waist !== null && patient.gender !== 'Unspecified').length;
     $('#kpi-total').textContent = App.getUniquePatientCount(data).toLocaleString('en-US');
@@ -258,8 +259,8 @@
       : complete === 0 ? 'Basic liver assessment · Anthropometric data unavailable' : `Complete anthropometric data for ${complete} of ${data.length} examinations`;
     $('#kpi-risk').textContent = liverData.length ? `${Math.round((highRisk.length / liverData.length) * 100)}%` : '—';
     $('#kpi-risk-count').textContent = liverData.length ? `${highRisk.length.toLocaleString('en-US')} examinations meeting follow-up criteria` : 'E Median/CAP data unavailable';
-    $('#kpi-bmi').textContent = averageBMI === null ? '—' : averageBMI.toFixed(1);
-    $('#kpi-bmi-label').textContent = averageBMI === null ? 'No BMI data available' : averageBMI < 23 ? 'Mean within the normal category' : averageBMI < 25 ? 'Mean within the overweight category' : 'Mean within an obesity category';
+    $('#kpi-e').textContent = averageE === null ? '—' : averageE.toFixed(1);
+    $('#kpi-e-label').textContent = averageE === null ? 'No E Median data available' : `Cohort mean corresponds to ${App.classifyFibrosis(averageE).code}`;
     $('#kpi-cap').textContent = averageCAP === null ? '—' : Math.round(averageCAP);
     $('#kpi-cap-label').textContent = averageCAP === null ? 'No CAP data available' : `Cohort mean corresponds to ${App.classifyCap(averageCAP).code}`;
 
@@ -303,18 +304,52 @@
     const cap = App.classifyCap(patient.cap);
     if (App.isHighRisk(patient)) return `<span class="risk-badge high"><i></i>Elevated Risk · ${fibrosis.code}/${cap.code}</span>`;
     if (fibrosis.code === 'F2' || cap.code === 'S2') return `<span class="risk-badge medium"><i></i>Clinical Follow-up · ${fibrosis.code}/${cap.code}</span>`;
+    if (patient.stiffness === null || patient.cap === null) return `<span class="risk-badge neutral"><i></i>Incomplete Assessment · ${fibrosis.code}/${cap.code}</span>`;
     return `<span class="risk-badge low"><i></i>Lower Risk · ${fibrosis.code}/${cap.code}</span>`;
+  }
+
+  function getPatientDataIssues(patient) {
+    const issues = [];
+    const firstName = String(patient.firstName || '').trim();
+    const lastName = String(patient.lastName || '').trim();
+    const hasSeparatedName = Boolean(firstName || lastName);
+
+    if (patient.nameMissing) issues.push('Patient name');
+    else if (hasSeparatedName) {
+      if (!firstName) issues.push('First name');
+      if (!lastName) issues.push('Last name');
+    }
+    if (!patient.id || /^ROW-\d+$/i.test(patient.id)) issues.push('Reference ID');
+    if (!(patient.date instanceof Date) || Number.isNaN(patient.date.valueOf())) issues.push('Examination date');
+    if (patient.stiffness === null) issues.push('E Median');
+    if (patient.cap === null) issues.push('CAP Enhanced Mean');
+    if (patient.height === null) issues.push('Height');
+    if (patient.weight === null) issues.push('Weight');
+    if (patient.bmi === null) issues.push('BMI');
+    if (patient.waist === null) issues.push('Waist circumference');
+    if (patient.gender === 'Unspecified') issues.push('Sex');
+    if (!patient.examiner || patient.examiner === 'Not specified') issues.push('Examiner');
+    return issues;
   }
 
   function renderOverviewTable() {
     const keyword = $('#overview-search').value.trim().toLowerCase();
     const analysisData = App.getAnalysisData();
-    const filtered = analysisData.filter(patient => `${patient.name} ${patient.id} ${patient.sourceFile || ''}`.toLowerCase().includes(keyword));
+    const incompleteCount = analysisData.filter(patient => getPatientDataIssues(patient).length > 0).length;
+    const qualityFiltered = App.state.showIncompleteOnly
+      ? analysisData.filter(patient => getPatientDataIssues(patient).length > 0)
+      : analysisData;
+    const filtered = qualityFiltered.filter(patient => `${patient.name} ${patient.id} ${patient.sourceFile || ''}`.toLowerCase().includes(keyword));
     const totalPages = Math.max(1, Math.ceil(filtered.length / App.TABLE_PAGE_SIZE));
     App.state.tablePage = Math.min(App.state.tablePage, totalPages);
     const start = (App.state.tablePage - 1) * App.TABLE_PAGE_SIZE;
     const pageData = filtered.slice(start, start + App.TABLE_PAGE_SIZE);
-    $('#overview-table-body').innerHTML = pageData.length ? pageData.map((patient, index) => `
+    $('#overview-table-body').innerHTML = pageData.length ? pageData.map(patient => {
+      const issues = getPatientDataIssues(patient);
+      const qualityCell = issues.length
+        ? `<span class="data-quality-status issue"><i class="fa-solid fa-triangle-exclamation"></i>${issues.length} missing</span><small class="data-quality-details">${escapeHTML(issues.join(', '))}</small>`
+        : '<span class="data-quality-status complete"><i class="fa-solid fa-circle-check"></i>Complete</span>';
+      return `
       <tr data-patient-index="${App.state.data.indexOf(patient)}">
         <td><strong class="patient-id-cell">${escapeHTML(patient.id)}</strong></td>
         <td><div class="person-cell"><span>${escapeHTML(initials(patient.name))}</span><div><strong class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</strong><small>${patient.nameMissing ? 'Name fields not found in source file' : 'Patient name'}</small></div></div></td>
@@ -324,8 +359,17 @@
         <td><strong>${formatMetric(patient.cap, 0)}</strong> <small>dB/m</small></td>
         <td><strong>${formatMetric(patient.stiffness, 1)}</strong> <small>kPa</small></td>
         <td>${riskBadge(patient)}</td>
-      </tr>`).join('') : '<tr><td colspan="8" class="empty-row">No records match your search.</td></tr>';
-    $('#table-count-label').textContent = `Showing ${filtered.length.toLocaleString('en-US')} of ${analysisData.length.toLocaleString('en-US')} examinations in this view`;
+        <td>${qualityCell}</td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" class="empty-row">${App.state.showIncompleteOnly ? 'No incomplete examination records were found.' : 'No records match your search.'}</td></tr>`;
+    $('#table-count-label').textContent = App.state.showIncompleteOnly
+      ? `Showing ${filtered.length.toLocaleString('en-US')} of ${incompleteCount.toLocaleString('en-US')} incomplete examinations`
+      : `Showing ${filtered.length.toLocaleString('en-US')} of ${analysisData.length.toLocaleString('en-US')} examinations in this view`;
+    const incompleteButton = $('#incomplete-data-toggle');
+    incompleteButton.classList.toggle('active', App.state.showIncompleteOnly);
+    incompleteButton.setAttribute('aria-pressed', String(App.state.showIncompleteOnly));
+    incompleteButton.title = App.state.showIncompleteOnly ? 'Show all examination records' : 'Show only records with missing data';
+    $('#incomplete-data-count').textContent = incompleteCount.toLocaleString('en-US');
     $('#table-page-label').textContent = `Page ${App.state.tablePage} / ${totalPages}`;
     $('#table-prev').disabled = App.state.tablePage <= 1;
     $('#table-next').disabled = App.state.tablePage >= totalPages;
@@ -654,6 +698,11 @@
     $('#overview-search').addEventListener('input', () => { App.state.tablePage = 1; renderOverviewTable(); });
     $('#table-prev').addEventListener('click', () => { App.state.tablePage -= 1; renderOverviewTable(); });
     $('#table-next').addEventListener('click', () => { App.state.tablePage += 1; renderOverviewTable(); });
+    $('#incomplete-data-toggle').addEventListener('click', () => {
+      App.state.showIncompleteOnly = !App.state.showIncompleteOnly;
+      App.state.tablePage = 1;
+      renderOverviewTable();
+    });
     $('#overview-table-body').addEventListener('click', event => {
       const row = event.target.closest('[data-patient-index]');
       if (!row) return;

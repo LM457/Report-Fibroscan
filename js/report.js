@@ -59,7 +59,7 @@
     const cap = distribution(data, p => App.classifyCap(p.cap), ['S0', 'S1', 'S2', 'S3'], ['No Steatosis', 'Mild Steatosis', 'Moderate Steatosis', 'Severe Steatosis'], ['#2dd4bf', '#a3e635', '#f59e0b', '#f97366']);
     const liverData = data.filter(patient => patient.cap !== null || patient.stiffness !== null);
     const highRisk = liverData.filter(App.isHighRisk).length;
-    const averageBMI = App.average(data.map(p => p.bmi));
+    const averageE = App.average(data.map(p => p.stiffness));
     const averageCAP = App.average(data.map(p => p.cap));
     const dates = data.map(p => p.date).filter(Boolean).sort((a, b) => a - b);
     const dateText = dates.length ? `${App.formatDate(dates[0], 'long')} - ${App.formatDate(dates.at(-1), 'long')}` : 'Not specified';
@@ -69,7 +69,7 @@
       <div class="pdf-kpis">
         <article><span><i class="fa-solid fa-user-group"></i></span><small>Unique Patients</small><strong>${uniquePatients.toLocaleString('en-US')} <em>patients</em></strong><p>${data.length.toLocaleString('en-US')} examinations from ${selectedFiles.length.toLocaleString('en-US')} file${selectedFiles.length === 1 ? '' : 's'}</p></article>
         <article><span><i class="fa-solid fa-triangle-exclamation"></i></span><small>Elevated-Risk Criteria</small><strong>${liverData.length ? ((highRisk / liverData.length) * 100).toFixed(1) : '—'}${liverData.length ? '<em>%</em>' : ''}</strong><p>${liverData.length ? `${highRisk} examinations` : 'E Median/CAP data unavailable'}</p></article>
-        <article><span><i class="fa-solid fa-weight-scale"></i></span><small>Mean Calculated BMI</small><strong>${metric(averageBMI, 1)}</strong><p>kg/m²</p></article>
+        <article><span><img class="liver-icon liver-icon--pdf" src="assets/liver-icon.svg" alt="" aria-hidden="true"></span><small>Mean E Median</small><strong>${metric(averageE, 1)}</strong><p>kPa · ${averageE === null ? 'Data unavailable' : App.classifyFibrosis(averageE).code}</p></article>
         <article><span><i class="fa-solid fa-droplet"></i></span><small>Mean CAP</small><strong>${metric(averageCAP, 0)}</strong><p>dB/m</p></article>
       </div>
       <div class="pdf-two-column">${chartPanel('Liver Fibrosis Stage', 'Distribution among examinations with a valid E Median value', chartImages.fibrosis, fibrosis.reduce((sum, item) => sum + item.count, 0), fibrosis)}${chartPanel('Hepatic Steatosis Grade', 'Number of examinations in each CAP grade', chartImages.cap, '', cap)}</div>
