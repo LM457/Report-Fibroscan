@@ -12,6 +12,10 @@
     ? '—'
     : Number(value).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
+  const recordNumber = patient => Number.isInteger(patient?.importOrder) && patient.importOrder > 0
+    ? patient.importOrder
+    : Math.max(1, App.state.data.indexOf(patient) + 1);
+
   const companyLogo = className => App.COMPANY_LOGO_DATA_URL
     ? `<img class="${className}" src="${App.COMPANY_LOGO_DATA_URL}" alt="Valor Health">`
     : '<strong class="pdf-logo-fallback">Valor Health</strong>';
@@ -148,9 +152,9 @@
         const fibrosis = App.classifyFibrosis(p.stiffness);
         const cap = App.classifyCap(p.cap);
         const risk = App.isHighRisk(p) ? 'Elevated' : (fibrosis.code === 'F2' || cap.code === 'S2') ? 'Follow-up' : 'Lower';
-        return `<tr><td>${start + index + 1}</td><td><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.id)} · Examiner: ${escapeHTML(p.examiner)}</small></td><td>${App.formatDate(p.date)}<small>${escapeHTML(p.sourceFile || '')}</small></td><td>${escapeHTML(p.gender)}</td><td>${metric(p.height, 1)}</td><td>${metric(p.weight, 1)}</td><td>${metric(p.bmi, 1)}</td><td>${metric(p.waist, 1)}</td><td>${metric(p.cap, 0)}<small>${cap.code}</small></td><td>${metric(p.stiffness, 1)}<small>${fibrosis.code}</small></td><td>${risk}</td></tr>`;
+        return `<tr><td>${recordNumber(p)}</td><td><strong>${escapeHTML(p.id)}</strong><small>Identity protected</small></td><td>${App.formatDate(p.date)}<small>${escapeHTML(p.sourceFile || '')}</small></td><td>${escapeHTML(p.gender)}</td><td>${metric(p.height, 1)}</td><td>${metric(p.weight, 1)}</td><td>${metric(p.bmi, 1)}</td><td>${metric(p.waist, 1)}</td><td>${metric(p.cap, 0)}<small>${cap.code}</small></td><td>${metric(p.stiffness, 1)}<small>${fibrosis.code}</small></td><td>${risk}</td></tr>`;
       }).join('');
-      const content = `<div class="pdf-table-caption"><span>Records ${start + 1}-${Math.min(start + chunkSize, data.length)} of ${data.length} examinations</span><span>Units: height/waist cm · weight kg · CAP dB/m · E kPa</span></div><article class="pdf-data-table"><table><thead><tr><th>#</th><th>Patient</th><th>Date/File</th><th>Sex</th><th>Height</th><th>Weight</th><th>BMI</th><th>Waist</th><th>CAP</th><th>E</th><th>Risk</th></tr></thead><tbody>${rows}</tbody></table></article><p class="pdf-table-note">BMI is calculated from height and weight. The S/F code below each measurement represents the category assigned using the thresholds in this report.</p>`;
+      const content = `<div class="pdf-table-caption"><span>Records ${start + 1}-${Math.min(start + chunkSize, data.length)} of ${data.length} examinations</span><span>Units: height/waist cm · weight kg · CAP dB/m · E kPa</span></div><article class="pdf-data-table"><table><thead><tr><th>Record #</th><th>Reference ID</th><th>Date/File</th><th>Sex</th><th>Height</th><th>Weight</th><th>BMI</th><th>Waist</th><th>CAP</th><th>E</th><th>Risk</th></tr></thead><tbody>${rows}</tbody></table></article><p class="pdf-table-note">Patient and examiner names are intentionally excluded. BMI is calculated from height and weight. The S/F code below each measurement represents the category assigned using the thresholds in this report.</p>`;
       pages.push(pageShell('Individual Examination Data', 'COMPLETE DATA APPENDIX', content, 'pdf-patient-page'));
     }
     return pages.join('');
@@ -162,8 +166,7 @@
     const bmi = App.classifyBMI(patient.bmi);
     const risk = App.isHighRisk(patient) ? 'Meets Elevated-Risk Criteria' : 'Does Not Meet Elevated-Risk Criteria';
     const content = `
-      <div class="pdf-patient-identity"><span>${companyLogo('pdf-patient-logo')}</span><div><p>Patient Name</p><h2>${escapeHTML(patient.name)}</h2><small>Reference ID ${escapeHTML(patient.id)} · Examination date ${App.formatDate(patient.date, 'long')} · Source file ${escapeHTML(patient.sourceFile || 'Not specified')}</small></div><b class="${App.isHighRisk(patient) ? 'pdf-risk-high' : 'pdf-risk-low'}">${risk}</b></div>
-      <div class="pdf-examiner"><i class="fa-solid fa-user-doctor"></i><div><small>Examiner</small><strong>${escapeHTML(patient.examiner)}</strong></div></div>
+      <div class="pdf-patient-identity"><span>${companyLogo('pdf-patient-logo')}</span><div><p>Protected Patient Record</p><h2>Record #${recordNumber(patient)}</h2><small>Reference ID ${escapeHTML(patient.id)} · Examination date ${App.formatDate(patient.date, 'long')} · Source file ${escapeHTML(patient.sourceFile || 'Not specified')}</small></div><b class="${App.isHighRisk(patient) ? 'pdf-risk-high' : 'pdf-risk-low'}">${risk}</b></div>
       <div class="pdf-stage-grid">
         <article><div class="pdf-stage-head"><span><img class="liver-icon liver-icon--pdf" src="assets/liver-icon.svg" alt="" aria-hidden="true"> Liver Fibrosis</span><b style="background:${fibrosis.color}">${fibrosis.code}</b></div><strong>${metric(patient.stiffness, 1)} <em>kPa</em></strong><h3>${fibrosis.label}</h3><p>${escapeHTML(fibrosis.stage || '')}</p></article>
         <article><div class="pdf-stage-head"><span><i class="fa-solid fa-droplet"></i> Hepatic Steatosis</span><b style="background:${cap.color}">${cap.code}</b></div><strong>${metric(patient.cap, 0)} <em>dB/m</em></strong><h3>${cap.label}</h3><p>Estimated liver fat ${cap.liverFat} · ${cap.range}</p></article>
@@ -355,8 +358,8 @@
       const waist = App.isHighWaist(patient);
       const risk = appendixRisk(patient);
       return `<tr>
-        <td><strong class="patient-id-cell">${escapeHTML(patient.id)}</strong><small>#${start + index + 1}</small></td>
-        <td><strong>${escapeHTML(patient.name)}</strong><small>Examiner: ${escapeHTML(patient.examiner)}</small></td>
+        <td><strong class="patient-id-cell">${recordNumber(patient)}</strong><small>Record #</small></td>
+        <td><strong>${escapeHTML(patient.id)}</strong><small>Identity protected</small></td>
         <td>${App.formatDate(patient.date)}</td>
         <td>${escapeHTML(patient.gender)}</td>
         <td><strong>${metric(patient.bmi, 1)}</strong><small>${escapeHTML(bmi.label)}</small></td>
@@ -368,7 +371,7 @@
     }).join('');
     page.innerHTML = `
       <div class="section-heading web-appendix-heading"><div><p class="section-kicker">COMPLETE DATA APPENDIX</p><h2>Individual Examination Data</h2><p>Records ${start + 1}-${start + chunk.length} of ${App.state.data.length.toLocaleString('en-US')} examinations · Part ${pageNumber}/${totalPages}</p></div></div>
-      <article class="panel table-panel web-appendix-table"><div class="table-head panel-head"><div><h3>Examination Details</h3><p>BMI calculated from height and weight · CAP in dB/m · E Median in kPa · Waist circumference in cm</p></div></div><div class="table-scroll"><table><thead><tr><th>Reference ID</th><th>Patient Name</th><th>Date</th><th>Sex</th><th>BMI</th><th>Waist</th><th>CAP</th><th>E Median</th><th>Risk Category</th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
+      <article class="panel table-panel web-appendix-table"><div class="table-head panel-head"><div><h3>Examination Details</h3><p>Patient and examiner names excluded · BMI calculated from height and weight · CAP in dB/m · E Median in kPa · Waist circumference in cm</p></div></div><div class="table-scroll"><table><thead><tr><th>Record #</th><th>Reference ID</th><th>Date</th><th>Sex</th><th>BMI</th><th>Waist</th><th>CAP</th><th>E Median</th><th>Risk Category</th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
     return stage;
   }
 

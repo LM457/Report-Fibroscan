@@ -4,6 +4,11 @@
   const $ = selector => document.querySelector(selector);
   const $$ = selector => [...document.querySelectorAll(selector)];
 
+  function setText(selector, value) {
+    const element = $(selector);
+    if (element) element.textContent = value;
+  }
+
   function escapeHTML(value) {
     return String(value ?? '')
       .replaceAll('&', '&amp;')
@@ -41,11 +46,12 @@
     const page = $(`#page-${pageName}`);
     if (!page) return;
     App.state.activePage = pageName;
+    document.body.dataset.activePage = pageName;
     $$('.page').forEach(item => item.classList.toggle('active', item === page));
     $$('[data-page]').forEach(item => item.classList.toggle('active', item.dataset.page === pageName));
     $('#page-title').textContent = page.dataset.title;
     window.history.replaceState(null, '', `#${pageName}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     // Recreate the active page charts so their entrance animation plays on
     // every navigation, including Overview rather than only Analytics.
     if (App.state.data.length && pageName === 'overview') requestAnimationFrame(App.renderOverviewCharts);
@@ -77,6 +83,8 @@
         }
         seen.add(key);
         fileEntry.activeCount += 1;
+        // Global display order follows file import order and continues across files.
+        patient.importOrder = combined.length + 1;
         combined.push(patient);
       });
     });
@@ -249,20 +257,20 @@
     const averageE = App.average(data.map(patient => patient.stiffness));
     const averageCAP = App.average(data.map(patient => patient.cap));
     const complete = data.filter(patient => patient.height !== null && patient.weight !== null && patient.bmi !== null && patient.waist !== null && patient.gender !== 'Unspecified').length;
-    $('#kpi-total').textContent = App.getUniquePatientCount(data).toLocaleString('en-US');
-    $('#kpi-exams').textContent = data.length.toLocaleString('en-US');
-    $('#kpi-files').textContent = selectedFile
+    setText('#kpi-total', App.getUniquePatientCount(data).toLocaleString('en-US'));
+    setText('#kpi-exams', data.length.toLocaleString('en-US'));
+    setText('#kpi-files', selectedFile
       ? `Selected file · ${selectedFile.name}`
-      : `${App.state.files.length.toLocaleString('en-US')} files · Combined view`;
-    $('#kpi-complete').textContent = complete === data.length
+      : `${App.state.files.length.toLocaleString('en-US')} files · Combined view`);
+    setText('#kpi-complete', complete === data.length
       ? 'Complete anthropometric data for all examinations'
-      : complete === 0 ? 'Basic liver assessment · Anthropometric data unavailable' : `Complete anthropometric data for ${complete} of ${data.length} examinations`;
-    $('#kpi-risk').textContent = liverData.length ? `${Math.round((highRisk.length / liverData.length) * 100)}%` : '—';
-    $('#kpi-risk-count').textContent = liverData.length ? `${highRisk.length.toLocaleString('en-US')} examinations meeting follow-up criteria` : 'E Median/CAP data unavailable';
-    $('#kpi-e').textContent = averageE === null ? '—' : averageE.toFixed(1);
-    $('#kpi-e-label').textContent = averageE === null ? 'No E Median data available' : `Cohort mean corresponds to ${App.classifyFibrosis(averageE).code}`;
-    $('#kpi-cap').textContent = averageCAP === null ? '—' : Math.round(averageCAP);
-    $('#kpi-cap-label').textContent = averageCAP === null ? 'No CAP data available' : `Cohort mean corresponds to ${App.classifyCap(averageCAP).code}`;
+      : complete === 0 ? 'Basic liver assessment · Anthropometric data unavailable' : `Complete anthropometric data for ${complete} of ${data.length} examinations`);
+    setText('#kpi-risk', liverData.length ? `${Math.round((highRisk.length / liverData.length) * 100)}%` : '—');
+    setText('#kpi-risk-count', liverData.length ? `${highRisk.length.toLocaleString('en-US')} examinations meeting follow-up criteria` : 'E Median/CAP data unavailable');
+    setText('#kpi-e', averageE === null ? '—' : averageE.toFixed(1));
+    setText('#kpi-e-label', averageE === null ? 'No E Median data available' : `Cohort mean corresponds to ${App.classifyFibrosis(averageE).code}`);
+    setText('#kpi-cap', averageCAP === null ? '—' : Math.round(averageCAP));
+    setText('#kpi-cap-label', averageCAP === null ? 'No CAP data available' : `Cohort mean corresponds to ${App.classifyCap(averageCAP).code}`);
 
     const dates = data.map(patient => patient.date).filter(Boolean).sort((a, b) => a - b);
     $('#dataset-date-range').innerHTML = dates.length
@@ -310,15 +318,6 @@
 
   function getPatientDataIssues(patient) {
     const issues = [];
-    const firstName = String(patient.firstName || '').trim();
-    const lastName = String(patient.lastName || '').trim();
-    const hasSeparatedName = Boolean(firstName || lastName);
-
-    if (patient.nameMissing) issues.push('Patient name');
-    else if (hasSeparatedName) {
-      if (!firstName) issues.push('First name');
-      if (!lastName) issues.push('Last name');
-    }
     if (!patient.id || /^ROW-\d+$/i.test(patient.id)) issues.push('Reference ID');
     if (!(patient.date instanceof Date) || Number.isNaN(patient.date.valueOf())) issues.push('Examination date');
     if (patient.stiffness === null) issues.push('E Median');
@@ -328,7 +327,6 @@
     if (patient.bmi === null) issues.push('BMI');
     if (patient.waist === null) issues.push('Waist circumference');
     if (patient.gender === 'Unspecified') issues.push('Sex');
-    if (!patient.examiner || patient.examiner === 'Not specified') issues.push('Examiner');
     return issues;
   }
 
@@ -339,7 +337,7 @@
     const qualityFiltered = App.state.showIncompleteOnly
       ? analysisData.filter(patient => getPatientDataIssues(patient).length > 0)
       : analysisData;
-    const filtered = qualityFiltered.filter(patient => `${patient.name} ${patient.id} ${patient.sourceFile || ''}`.toLowerCase().includes(keyword));
+    const filtered = qualityFiltered.filter(patient => `${patient.id} ${recordNumber(patient)}`.toLowerCase().includes(keyword));
     const totalPages = Math.max(1, Math.ceil(filtered.length / App.TABLE_PAGE_SIZE));
     App.state.tablePage = Math.min(App.state.tablePage, totalPages);
     const start = (App.state.tablePage - 1) * App.TABLE_PAGE_SIZE;
@@ -351,9 +349,9 @@
         : '<span class="data-quality-status complete"><i class="fa-solid fa-circle-check"></i>Complete</span>';
       return `
       <tr data-patient-index="${App.state.data.indexOf(patient)}">
-        <td><strong class="patient-id-cell">${escapeHTML(patient.id)}</strong></td>
-        <td><div class="person-cell"><span>${escapeHTML(initials(patient.name))}</span><div><strong class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</strong><small>${patient.nameMissing ? 'Name fields not found in source file' : 'Patient name'}</small></div></div></td>
-        <td>${App.formatDate(patient.date)}<br><small>${escapeHTML(patient.sourceFile || '')}</small></td>
+        <td><strong class="patient-id-cell" title="${escapeHTML(patient.id)}">${escapeHTML(patient.id)}</strong></td>
+        <td><div class="person-cell"><span>${recordNumber(patient)}</span><div><strong>*** ***</strong><small>Identity protected</small></div></div></td>
+        <td class="exam-date-cell"><span>${App.formatDate(patient.date)}</span><small class="source-file-name" title="${escapeHTML(patient.sourceFile || '')}">${escapeHTML(patient.sourceFile || '')}</small></td>
         <td>${escapeHTML(patient.gender)}</td>
         <td>${formatMetric(patient.bmi, 1)}</td>
         <td><strong>${formatMetric(patient.cap, 0)}</strong> <small>dB/m</small></td>
@@ -393,7 +391,7 @@
     const steatosis = $('#steatosis-filter').value;
     const fibrosis = $('#fibrosis-filter').value;
     return App.getAnalysisData().filter(patient => (
-      `${patient.name} ${patient.id}`.toLowerCase().includes(keyword) &&
+      `${patient.id} ${recordNumber(patient)}`.toLowerCase().includes(keyword) &&
       (!gender || patient.gender === gender) &&
       (!date || App.toISODate(patient.date) === date) &&
       (!steatosis || App.classifyCap(patient.cap).code === steatosis) &&
@@ -436,10 +434,10 @@
       const fibrosisStage = App.classifyFibrosis(patient.stiffness);
       const steatosisStage = App.classifyCap(patient.cap);
       return `<button type="button" class="patient-list-item ${App.getPatientKey(patient) === activeKey ? 'selected' : ''}" data-select-patient="${index}">
-        <span class="patient-avatar">${escapeHTML(initials(patient.name))}</span>
+        <span class="patient-avatar">${recordNumber(patient)}</span>
         <span class="patient-list-info">
           <small class="patient-id-line">Reference ID ${escapeHTML(patient.id)}</small>
-          <strong class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</strong>
+          <strong>*** ***</strong>
           <small>Latest ${App.formatDate(patient.date)} · ${visits.length.toLocaleString('en-US')} visits</small>
         </span>
         <span class="patient-badges"><span class="stage-pill ${fibrosisStage.className}">${fibrosisStage.code}</span><span class="stage-pill ${steatosisStage.className}">${steatosisStage.code}</span></span>
@@ -502,7 +500,7 @@
       : 'The available measurements do not meet the configured elevated-risk criteria.';
     $('#health-card').innerHTML = `
       <div class="health-header">
-        <div class="health-person"><span>${escapeHTML(initials(patient.name))}</span><div class="health-identity"><p>Individual FibroScan Result</p><div class="identity-row"><small>Reference ID</small><strong>${escapeHTML(patient.id)}</strong></div><div class="identity-row patient-name-row"><small>Patient Name</small><h2 class="${patient.nameMissing ? 'missing-name' : ''}">${escapeHTML(patient.name)}</h2></div><small>Examined on ${App.formatDate(patient.date, 'long')} · Source file: ${escapeHTML(patient.sourceFile || 'Not specified')}</small></div></div>
+        <div class="health-person"><span>${recordNumber(patient)}</span><div class="health-identity"><p>Individual FibroScan Result</p><div class="identity-row"><small>Reference ID</small><strong>${escapeHTML(patient.id)}</strong></div><div class="identity-row patient-name-row"><small>Patient Identity</small><p>*** ***</p></div><small>Examined on ${App.formatDate(patient.date, 'long')} · Source file: ${escapeHTML(patient.sourceFile || 'Not specified')}</small></div></div>
         <div class="health-header-actions">${riskBadge(patient)}<button type="button" class="btn btn-secondary btn-patient-pdf" data-export-patient="${App.state.data.indexOf(patient)}"><i class="fa-solid fa-file-pdf"></i> Export Individual PDF</button></div>
       </div>
       <div class="health-metrics">
@@ -525,7 +523,6 @@
         <div><span><i class="fa-solid fa-weight-hanging"></i></span><p>Weight<strong>${formatMetric(patient.weight, 1)} <small>kg</small></strong></p></div>
         <div><span><i class="fa-solid fa-ruler"></i></span><p>Waist Circumference<strong>${formatMetric(patient.waist, 1)} <small>cm</small></strong><small>${App.isHighWaist(patient) === null ? 'Classification unavailable' : App.isHighWaist(patient) ? 'Elevated waist circumference' : 'Below elevated threshold'}</small></p></div>
         <div><span><i class="fa-solid fa-venus-mars"></i></span><p>Sex<strong>${escapeHTML(patient.gender)}</strong></p></div>
-        <div><span><i class="fa-solid fa-user-doctor"></i></span><p>Examiner<strong>${escapeHTML(patient.examiner)}</strong></p></div>
       </div>
       <section class="patient-history">
         <div class="patient-history-head"><h3>Longitudinal Examination History</h3><span>${visits.length.toLocaleString('en-US')} examinations</span></div>
@@ -657,21 +654,21 @@
       return;
     }
     const sample = [
-      { 'Exam file name': 'HN-001', 'Last name': 'Patient', 'First name': 'Example', 'CAP Enhanced Mean (dB/m)': 265, 'E Median (kPa)': 8.4, 'Height': 170, 'Weight': 71.7, 'Gender': 'M', 'Waist Circumference': 88, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026, 'Examiner Name': 'Dr Sample Examiner' },
-      { 'Exam file name': 'HN-002', 'Last name': 'Record', 'First name': 'Sample', 'CAP Enhanced Mean (dB/m)': 286, 'E Median (kPa)': 11.2, 'Height': 160, 'Weight': 69.4, 'Gender': 'F', 'Waist Circumference': 92, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026, 'Examiner Name': 'Dr Sample Examiner' }
+      { 'Exam file name': 'HN-001', 'Last name': 'Patient', 'First name': 'Example', 'CAP Enhanced Mean (dB/m)': 265, 'E Median (kPa)': 8.4, 'Height': 170, 'Weight': 71.7, 'Gender': 'M', 'Waist Circumference': 88, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026 },
+      { 'Exam file name': 'HN-002', 'Last name': 'Record', 'First name': 'Sample', 'CAP Enhanced Mean (dB/m)': 286, 'E Median (kPa)': 11.2, 'Height': 160, 'Weight': 69.4, 'Gender': 'F', 'Waist Circumference': 92, 'Exam date (day)': 13, 'Exam date (month)': 8, 'Exam date (year)': 2026 }
     ];
     const worksheet = XLSX.utils.json_to_sheet(sample);
-    worksheet['!cols'] = [{ wch: 18 }, { wch: 20 }, { wch: 20 }, { wch: 29 }, { wch: 16 }, { wch: 11 }, { wch: 11 }, { wch: 11 }, { wch: 22 }, { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 24 }];
+    worksheet['!cols'] = [{ wch: 18 }, { wch: 20 }, { wch: 20 }, { wch: 29 }, { wch: 16 }, { wch: 11 }, { wch: 11 }, { wch: 11 }, { wch: 22 }, { wch: 18 }, { wch: 20 }, { wch: 18 }];
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'FibroScan Data');
     XLSX.writeFile(workbook, 'FibroScan_Template.xlsx');
     showToast('Excel template downloaded.');
   }
 
-  function initials(name) {
-    const parts = String(name || '?').trim().split(/\s+/).filter(Boolean);
-    if (name === 'Name unavailable') return 'NA';
-    return parts.slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase() || '?';
+  function recordNumber(patient) {
+    if (Number.isInteger(patient?.importOrder) && patient.importOrder > 0) return String(patient.importOrder);
+    const index = App.state.data.indexOf(patient);
+    return index >= 0 ? String(index + 1) : '—';
   }
 
   function formatMetric(value, decimals) {

@@ -7,12 +7,12 @@ FibroSight is a privacy-first dashboard for analysing FibroScan examination data
 - Import one or multiple `.xlsx` or `.xls` files.
 - Combine examinations performed on different dates.
 - Report unique patient counts separately from examination counts.
-- Analyse either all examinations or the latest examination per patient.
+- Analyse all imported files together or select one source file at a time.
 - Classify liver fibrosis, hepatic steatosis, BMI, and waist circumference.
 - Calculate BMI from height and weight.
-- Search, filter, and review longitudinal patient examination history.
+- Search by Reference ID or imported record number, filter results, and review longitudinal examination history without displaying patient names.
 - Configure clinical interpretation thresholds and retain settings in `localStorage`.
-- Export cohort-level and individual PDF reports.
+- Export cohort-level and individual PDF reports without patient or examiner names.
 - Process all patient data locally without transmitting it to a server.
 
 ## Cross-File Patient Matching
@@ -55,7 +55,8 @@ If either the first or last name is missing, the record is kept separate to redu
 | Examination day | `Exam date (day)` |
 | Examination month | `Exam date (month)` |
 | Examination year | `Exam date (year)` |
-| Examiner | `Examiner Name` |
+
+`First name` and `Last name` are used only in browser memory to match longitudinal records. They are masked throughout the interface, excluded from search, and never included in PDF exports. Legacy files may contain an examiner-name column, but the application ignores and does not retain it.
 
 A basic liver assessment may contain E Median and/or CAP without anthropometric data. BMI-, waist-, and sex-dependent analyses remain blank when the required data is unavailable.
 
@@ -139,6 +140,8 @@ No environment variables, API keys, backend services, or databases are required.
 ## Privacy and PDPA Considerations
 
 - Imported Excel data remains in the browser tab's memory.
+- Patient names are used only for in-memory record matching; they are never displayed, searchable, or exported.
+- Examiner names are ignored and are not retained, displayed, searchable, or exported.
 - Patient data is not stored in `localStorage`.
 - Only clinical threshold settings are retained in `localStorage`.
 - Imported data is removed when the page is refreshed, the tab is closed, or **Clear Data** is selected.
@@ -149,4 +152,3 @@ Although the application does not transmit patient data, organisations remain re
 ## Clinical Interpretation Disclaimer
 
 Outputs are descriptive summaries of the uploaded dataset. They do not constitute a diagnosis, treatment recommendation, or evidence that BMI, waist circumference, or sex directly causes fibrosis or steatosis. Results should be interpreted by qualified healthcare professionals alongside the complete clinical context.
-

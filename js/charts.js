@@ -99,14 +99,17 @@
   App.renderAnalysisCharts = function renderAnalysisCharts() {
     if (!window.Chart || !App.state.data.length) return;
     const data = App.getAnalysisData ? App.getAnalysisData() : App.state.data;
+    const recordNumber = patient => Number.isInteger(patient.importOrder)
+      ? patient.importOrder
+      : App.state.data.indexOf(patient) + 1;
     destroyChart('bmiE');
     const bmiEOptions = baseOptions();
     bmiEOptions.scales.x.title = { display: true, text: 'BMI (kg/m²)', color: chartTitleColor, padding: 10, font: chartFont(12) };
     bmiEOptions.scales.y.title = { display: true, text: 'E Median (kPa)', color: chartTitleColor, padding: 10, font: chartFont(12) };
-    bmiEOptions.plugins.tooltip.callbacks = { label: context => `${context.raw.name}: BMI ${context.raw.x}, E Median ${context.raw.y} kPa` };
+    bmiEOptions.plugins.tooltip.callbacks = { label: context => `Record #${context.raw.record}: BMI ${context.raw.x}, E Median ${context.raw.y} kPa` };
     App.state.charts.bmiE = new Chart(document.getElementById('bmi-e-chart'), {
       type: 'scatter',
-      data: { datasets: [{ data: data.filter(p => p.bmi !== null && p.stiffness !== null).map(p => ({ x: p.bmi, y: p.stiffness, name: p.name })), backgroundColor: 'rgba(249,115,102,.76)', pointRadius: 5, pointHoverRadius: 7, borderWidth: 1.5 }] },
+      data: { datasets: [{ data: data.filter(p => p.bmi !== null && p.stiffness !== null).map(p => ({ x: p.bmi, y: p.stiffness, record: recordNumber(p) })), backgroundColor: 'rgba(249,115,102,.76)', pointRadius: 5, pointHoverRadius: 7, borderWidth: 1.5 }] },
       options: bmiEOptions
     });
 
@@ -114,10 +117,10 @@
     const scatterOptions = baseOptions();
     scatterOptions.scales.x.title = { display: true, text: 'BMI (kg/m²)', color: chartTitleColor, padding: 10, font: chartFont(12) };
     scatterOptions.scales.y.title = { display: true, text: 'Mean CAP (dB/m)', color: chartTitleColor, padding: 10, font: chartFont(12) };
-    scatterOptions.plugins.tooltip.callbacks = { label: context => `${context.raw.name}: BMI ${context.raw.x}, CAP ${context.raw.y}` };
+    scatterOptions.plugins.tooltip.callbacks = { label: context => `Record #${context.raw.record}: BMI ${context.raw.x}, CAP ${context.raw.y}` };
     App.state.charts.bmiCap = new Chart(document.getElementById('bmi-cap-chart'), {
       type: 'scatter',
-      data: { datasets: [{ data: data.filter(p => p.bmi !== null && p.cap !== null).map(p => ({ x: p.bmi, y: p.cap, name: p.name })), backgroundColor: 'rgba(15,118,110,.72)', pointRadius: 5, pointHoverRadius: 7, borderWidth: 1.5 }] },
+      data: { datasets: [{ data: data.filter(p => p.bmi !== null && p.cap !== null).map(p => ({ x: p.bmi, y: p.cap, record: recordNumber(p) })), backgroundColor: 'rgba(15,118,110,.72)', pointRadius: 5, pointHoverRadius: 7, borderWidth: 1.5 }] },
       options: scatterOptions
     });
 

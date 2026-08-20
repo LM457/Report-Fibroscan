@@ -12,7 +12,6 @@
     weight: ['weight', 'weight (kg)', 'weight(kg)', 'น้ำหนัก', 'น้ำหนัก (กก.)', 'น้ำหนัก(kg)'],
     gender: ['gender', 'sex', 'เพศ'],
     waist: ['waist circumference', 'waist', 'waistcircumference', 'รอบเอว', 'เส้นรอบเอว','Code'],
-    examiner: ['examiner', 'examiner name', 'operator', 'operator name', 'performed by', 'ผู้ตรวจ', 'ชื่อผู้ตรวจ', 'ผู้ทำการตรวจ'],
     dateDay: ['exam date (day)', 'exam date day'],
     dateMonth: ['exam date (month)', 'exam date month'],
     dateYear: ['exam date (year)', 'exam date year'],
@@ -210,8 +209,7 @@
         gender: normalizeGender(cell(row, columns, 'gender')),
         waist: parseNumber(cell(row, columns, 'waist')),
         examDate,
-        date: examDate,
-        examiner: String(cell(row, columns, 'examiner') ?? '').trim() || 'Not specified'
+        date: examDate
       };
       if (!patient.id) patient.id = `ROW-${patient.rowNumber}`;
       if (!patient.patientName) patient.patientName = 'Name unavailable';

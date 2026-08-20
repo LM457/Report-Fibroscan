@@ -34,7 +34,7 @@ h1, h2, h3, p { margin-top: 0; }
 .sidebar::after { position: absolute; right: -85px; bottom: 65px; width: 190px; height: 190px; border: 1px solid rgba(45, 212, 191, .08); border-radius: 50%; content: ""; }
 .brand { position: relative; z-index: 1; display: grid; gap: 10px; margin: 0 8px 38px; color: #fff; text-decoration: none; }
 .company-logo { display: block; width: 200px; height: auto; object-fit: contain; }
-.product-brand { display: flex; gap: 10px; align-items: center; }
+.product-brand { display: flex; gap: 10px; align-items: center;  }
 .brand-mark { display: grid; width: 43px; height: 43px; place-items: center; border: 1px solid rgba(255,255,255,.18); border-radius: 13px; color: var(--navy); background: var(--red); box-shadow: 0 0 10px #ee2737; }
 .brand-mark i { font-size: 19px; }
 .brand strong { display: block; font-family: Manrope, sans-serif; font-size: 18px; letter-spacing: -.35px; }
@@ -132,7 +132,7 @@ h1, h2, h3, p { margin-top: 0; }
 .file-entry { display: flex; gap: 10px; align-items: center; min-width: 0; padding: 10px 11px; border: 1px solid #e4ebec; border-radius: 10px; background: #f9fbfb; }
 .file-entry > i { color: var(--teal); }.file-entry > div { min-width: 0; flex: 1; }.file-entry strong, .file-entry small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.file-entry strong { color: #29485b; font-size: 10px; }.file-entry small { margin-top: 2px; color: #81939d; font-size: 8px; }
 .file-remove { display: grid; width: 28px; height: 28px; flex: 0 0 28px; place-items: center; border: 0; border-radius: 8px; color: #9a6770; background: #fff0f2; cursor: pointer; }
-.kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 16px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 14px; margin-bottom: 16px; }
 .kpi-card { position: relative; min-height: 158px; padding: 20px 21px; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 9px 26px rgba(23,50,77,.04); }
 .kpi-card::after { position: absolute; top: -30px; right: -30px; width: 105px; height: 105px; border-radius: 50%; content: ""; opacity: .14; }
 .kpi-teal::after { background: var(--teal-2); }.kpi-amber::after { background: var(--amber); }.kpi-coral::after { background: var(--coral); }.kpi-blue::after { background: var(--blue); }.kpi-lime::after { background: var(--lime); }
@@ -160,7 +160,12 @@ h1, h2, h3, p { margin-top: 0; }
 .table-head { align-items: center; padding: 20px 22px 15px; }
 .mini-search, .search-field { display: flex; gap: 9px; align-items: center; border: 1px solid #dfe7e8; border-radius: 10px; color: #96a5ae; background: #f9fbfb; }
 .mini-search { width: 240px; padding: 0 12px; }.mini-search input, .search-field input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; }.mini-search input { height: 38px; font-size: 11px; }
-.table-scroll { overflow-x: auto; }
+.table-scroll {
+    display: inline-block;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+ }
 table { width: 100%; border-collapse: collapse; white-space: nowrap; }
 thead { background: #f7f9f9; }
 th { padding: 11px 17px; color: #7b8d99; font-size: 9px; font-weight: 600; text-align: left; }
@@ -168,7 +173,7 @@ td { padding: 12px 17px; border-top: 1px solid #edf1f2; color: #506572; font-siz
 tbody tr { cursor: pointer; transition: background .15s; }.tbody tr:hover, tbody tr:hover { background: #fbfdfd; }
 td small { color: #94a1aa; font-size: 8px; }
 .person-cell { display: flex; gap: 10px; align-items: center; }
-.person-cell > span, .patient-avatar { display: grid; flex: 0 0 32px; height: 32px; place-items: center; border-radius: 9px; color: var(--teal); background: #e2f5f1; font: 700 9px Manrope; }
+.person-cell > span, .patient-avatar { display: grid; flex: 0 0 32px; height: 32px; place-items: center; border-radius: 9px; color: var(--teal); background: #e2f5f1; font: 700 9px Manrope; font-variant-numeric: tabular-nums; }
 .person-cell strong, .person-cell small { display: block; }.person-cell strong { color: var(--navy); font-size: 11px; }.person-cell small { margin-top: 1px; }
 .patient-id-cell { color: var(--teal); font: 700 10px Manrope, var(--font-ui); }.missing-name { color: #b46a22 !important; font-style: italic; }
 .risk-badge { display: inline-flex; gap: 6px; align-items: center; padding: 5px 8px; border-radius: 99px; font-size: 9px; font-weight: 600; }
@@ -197,7 +202,7 @@ td small { color: #94a1aa; font-size: 8px; }
 .health-card { min-height: 580px; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
 .health-header { display: flex; gap: 20px; align-items: center; justify-content: space-between; padding: 24px 27px; border-bottom: 1px solid #e9eeef; background: linear-gradient(120deg, #f6fbfa, #fff); }
 .health-header-actions { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }.btn-patient-pdf { min-height: 35px; padding: 7px 11px; font-size: 9px; }
-.health-person { display: flex; gap: 15px; align-items: center; }.health-person > span { display: grid; width: 50px; height: 50px; place-items: center; border-radius: 15px; color: var(--navy); background: var(--lime); font: 800 13px Manrope; }.health-person p { margin: 0; color: var(--teal); font-size: 9px; font-weight: 700; letter-spacing: .7px; }.health-person h2 { margin: 1px 0; color: var(--navy); font-size: 20px; }.health-person small { color: #83939d; font-size: 9px; }
+.health-person { display: flex; gap: 15px; align-items: center; }.health-person > span { display: grid; width: 50px; height: 50px; place-items: center; border-radius: 15px; color: var(--navy); background: var(--lime); font: 800 13px Manrope; font-variant-numeric: tabular-nums; }.health-person p { margin: 0; color: var(--teal); font-size: 9px; font-weight: 700; letter-spacing: .7px; }.health-person h2 { margin: 1px 0; color: var(--navy); font-size: 20px; }.health-person small { color: #83939d; font-size: 9px; }
 .health-identity { display: grid; gap: 3px; }.identity-row { display: flex; gap: 8px; align-items: baseline; }.identity-row > small { min-width: 85px; color: #81939d; }.identity-row > strong { color: var(--teal); font: 700 11px Manrope, var(--font-ui); }.patient-name-row { align-items: center; }.patient-name-row h2 { margin: 0; }
 .health-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 22px 25px 15px; }
 .metric-card { position: relative; padding: 20px; overflow: hidden; border: 1px solid #e5ecec; border-radius: 15px; background: #fbfcfc; }.metric-card::after { position: absolute; right: -25px; bottom: -40px; width: 110px; height: 110px; border-radius: 50%; content: ""; opacity: .08; }.fibrosis-metric::after { background: var(--teal); }.cap-metric::after { background: var(--amber); }
@@ -519,7 +524,7 @@ body.modal-open { overflow: hidden; }
 .web-export-stage .page { display: none; animation: none; }
 .web-export-stage .page.active { display: block; }
 .web-export-stage .mobile-nav { display: none !important; }
-.web-export-stage .kpi-grid { grid-template-columns: repeat(5, 1fr); }
+.web-export-stage .kpi-grid { grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); }
 .web-export-stage .chart-grid { grid-template-columns: 1fr; }
 .web-export-stage .patient-layout { grid-template-columns: 335px minmax(0, 1fr); }
 .web-export-stage .patient-finder { position: static; top: auto; }
@@ -560,4 +565,196 @@ body.modal-open { overflow: hidden; }
     flex-direction: column; /* Stack stage badges when horizontal space is limited. */
     gap: 4px;
     align-items: flex-end;
+}
+
+/* Final screen-width guard: keep the fixed sidebar and Overview inside the viewport. */
+@media screen and (min-width: 901px) {
+  html,
+  body,
+  body > .app-shell {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body > .app-shell > .sidebar {
+    width: 220px;
+    max-width: 220px;
+    height: 100dvh;
+    padding: 20px 18px 16px;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+    contain: layout paint;
+  }
+
+  body > .app-shell > .sidebar .brand,
+  body > .app-shell > .sidebar .side-nav,
+  body > .app-shell > .sidebar .privacy-card,
+  body > .app-shell > .sidebar .sidebar-foot {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  body > .app-shell > .sidebar .brand {
+    row-gap: 50px;
+    margin-right: 0;
+    margin-bottom: 24px;
+    margin-left: 0;
+  }
+
+  body > .app-shell > .sidebar .company-logo {
+    display: block;
+    width: 100%;
+    max-width: 176px;
+    height: auto;
+    max-height: 88px;
+    margin-inline: auto;
+    object-fit: contain;
+  }
+
+  body > .app-shell > .main-area {
+    min-width: 0;
+    margin-left: 220px;
+  }
+
+  body[data-active-page="overview"] > .app-shell > .main-area {
+    width: calc(100% - 220px);
+    max-width: calc(100% - 220px);
+    overflow-x: clip;
+  }
+
+  body[data-active-page="overview"] .topbar,
+  body[data-active-page="overview"] .content-wrap,
+  body[data-active-page="overview"] #page-overview,
+  body[data-active-page="overview"] #dashboard-state {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  body[data-active-page="overview"] .topbar > div:first-child,
+  body[data-active-page="overview"] .topbar-actions,
+  body[data-active-page="overview"] .chart-grid > *,
+  body[data-active-page="overview"] .table-panel {
+    min-width: 0;
+  }
+
+  body[data-active-page="overview"] .topbar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media screen and (min-width: 901px) and (max-height: 760px) {
+  body > .app-shell > .sidebar { padding-top: 12px; padding-bottom: 12px; }
+  body > .app-shell > .sidebar .brand { row-gap: 12px; margin-bottom: 12px; }
+  body > .app-shell > .sidebar .company-logo { max-height: 58px; }
+  body > .app-shell > .sidebar .nav-item { padding-top: 8px; padding-bottom: 8px; }
+  body > .app-shell > .sidebar .privacy-card { padding: 10px; }
+  body > .app-shell > .sidebar .sidebar-foot { margin-top: 8px; padding-top: 8px; }
+}
+
+@media screen and (min-width: 901px) and (max-height: 610px) {
+  body > .app-shell > .sidebar .privacy-card,
+  body > .app-shell > .sidebar .sidebar-foot { display: none; }
+}
+
+/* Chart.js canvas containment: shrink grid tracks instead of clipping the charts. */
+body[data-active-page="overview"] #dashboard-state > .chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+body[data-active-page="overview"] #dashboard-state > .chart-grid > .chart-panel,
+body[data-active-page="overview"] #dashboard-state :is(.donut-wrap, .bar-wrap) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+body[data-active-page="overview"] #dashboard-state :is(#fibrosis-chart, #cap-chart) {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+/* A two-column chart is too narrow after subtracting the sidebar at this size. */
+@media screen and (min-width: 901px) and (max-width: 1180px) {
+  body[data-active-page="overview"] #dashboard-state > .chart-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Patient Data must fill the panel; the generic inline-block wrapper caused the empty right side. */
+body[data-active-page="overview"] .overview-table-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body[data-active-page="overview"] .overview-patient-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+body[data-active-page="overview"] .overview-patient-table .col-reference { width: 10%; }
+body[data-active-page="overview"] .overview-patient-table .col-record { width: 12%; }
+body[data-active-page="overview"] .overview-patient-table .col-exam-date { width: 10%; }
+body[data-active-page="overview"] .overview-patient-table .col-sex { width: 8%; }
+body[data-active-page="overview"] .overview-patient-table .col-bmi { width: 7%; }
+body[data-active-page="overview"] .overview-patient-table .col-cap { width: 10%; }
+body[data-active-page="overview"] .overview-patient-table .col-e { width: 11%; }
+body[data-active-page="overview"] .overview-patient-table .col-risk { width: 18%; }
+body[data-active-page="overview"] .overview-patient-table .col-quality { width: 14%; }
+
+body[data-active-page="overview"] .overview-patient-table th,
+body[data-active-page="overview"] .overview-patient-table td {
+  min-width: 0;
+  padding-right: clamp(6px, .8vw, 14px);
+  padding-left: clamp(6px, .8vw, 14px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body[data-active-page="overview"] .overview-patient-table .exam-date-cell > span,
+body[data-active-page="overview"] .overview-patient-table .source-file-name {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[data-active-page="overview"] .overview-patient-table .source-file-name {
+  max-width: min(100%, 12ch);
+}
+
+body[data-active-page="overview"] .overview-patient-table .patient-id-cell {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+
+body[data-active-page="overview"] .overview-patient-table .person-cell,
+body[data-active-page="overview"] .overview-patient-table .person-cell > div {
+  min-width: 0;
+}
+
+.header-container {
+  display: flex;
+  align-items: center; /* จัดให้อยู่กึ่งกลางในแนวตั้ง */
+  gap: 24px; /* กำหนดความกว้างของช่องว่างระหว่าง Logo กับข้อความ (ปรับตัวเลขได้) */
 }

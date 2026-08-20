@@ -9,28 +9,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="stylesheet" href="css/styles.css?v=20260818-data-quality">
+  <link rel="stylesheet" href="css/styles.css?v=20260819-priority-columns">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   <script src="js/config.js?v=20260818-data-quality" defer></script>
   <script src="js/logo-data.js" defer></script>
-  <script src="js/data.js?v=20260817-file-view" defer></script>
-  <script src="js/charts.js?v=20260817-clinical-en" defer></script>
-  <script src="js/report.js?v=20260818-data-quality" defer></script>
-  <script src="js/app.js?v=20260818-data-quality" defer></script>
+  <script src="js/data.js?v=20260819-privacy" defer></script>
+  <script src="js/charts.js?v=20260819-privacy" defer></script>
+  <script src="js/report.js?v=20260819-privacy" defer></script>
+  <script src="js/app.js?v=20260819-privacy" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Primary navigation">
       <a class="brand" href="#overview" data-page-link="overview" aria-label="FibroSight home">
-        <br>
-          <img class="company-logo" src="valorhealth-removebg.png" alt="Valor Health" width="250" height="150">
-        </br> 
+        <div class="header-container">
+        <img class="company-logo" src="valorhealth-removebg.png" alt="Valor Health" width="250" height="150">
+        </div>
         <span class="product-brand"><span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-dna"></i></span>
-        <span><strong>FibroSight</strong><small>Analysis</small></span>
-      </span>
+          <span><strong>FibroSight</strong><small>Analysis</small></span>
+        </span>
       </a>
 
       <nav class="side-nav">
@@ -103,7 +103,7 @@
               <div class="visual-orbit orbit-one"></div>
               <div class="visual-orbit orbit-two"></div>
               <div class="scan-card">
-                <div class="scan-head"><span><img class="liver-icon liver-icon--scan" src="assets/liver-icon.svg" alt="" aria-hidden="true"> Liver Scan Results</span><small>On-device</small></div>
+                <div class="scan-head"><span><img class="liver-icon liver-icon--scan" src="assets/liver-icon.svg" alt="" aria-hidden="true"> Fibroscan </span><small>On-device</small></div>
                 <div class="scan-kpi"><strong>8.4</strong><span>kPa</span></div>
                 <div class="wave-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
                 <div class="scan-foot"><span>Liver Stiffness</span><b>F2</b></div>
@@ -134,11 +134,11 @@
                 <div class="kpi-value"><strong id="kpi-total">0</strong><span>Patients</span></div>
                 <p id="kpi-complete">Complete Data 0%</p>
               </article>
-              <article class="kpi-card kpi-amber">
+              <!-- <article class="kpi-card kpi-amber">
                 <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="kpi-label">Number of Exams</span></div>
                 <div class="kpi-value"><strong id="kpi-exams">0</strong><span>Exams</span></div>
                 <p id="kpi-files">from 0 files</p>
-              </article>
+              </article> -->
               <article class="kpi-card kpi-coral">
                 <div class="kpi-top"><span class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></span><span class="kpi-label">High-Risk Group</span></div>
                 <div class="kpi-value"><strong id="kpi-risk">0%</strong></div>
@@ -171,11 +171,16 @@
             <article class="panel table-panel">
               <div class="panel-head table-head">
                 <div><h3>Patient Data</h3><p id="table-count-label">Showing all data</p></div>
-                <div class="mini-search"><i class="fa-solid fa-magnifying-glass"></i><input id="overview-search" type="search" placeholder="Search by name or ID..."></div>
+                <div class="mini-search"><i class="fa-solid fa-magnifying-glass"></i><input id="overview-search" type="search" placeholder="Search by Reference ID or record number..."></div>
               </div>
-              <div class="table-scroll">
-                <table>
-                  <thead><tr><th>Reference ID</th><th>Patient Name</th><th>Examination Date</th><th>Sex</th><th>BMI</th><th>Mean CAP</th><th>E Median (kPa)</th><th>Risk Category</th><th>Data Quality</th></tr></thead>
+              <div class="table-scroll overview-table-scroll">
+                <table class="overview-patient-table">
+                  <colgroup>
+                    <col class="col-reference"><col class="col-record"><col class="col-exam-date">
+                    <col class="col-sex"><col class="col-bmi"><col class="col-cap"><col class="col-e">
+                    <col class="col-risk"><col class="col-quality">
+                  </colgroup>
+                  <thead><tr><th>Reference ID</th><th>Patient Record</th><th>Examination Date</th><th>Sex</th><th>BMI</th><th>Mean CAP</th><th>E Median (kPa)</th><th>Risk Category</th><th>Data Quality</th></tr></thead>
                   <tbody id="overview-table-body"></tbody>
                 </table>
               </div>
@@ -189,13 +194,13 @@
 
         <section id="page-patients" class="page" data-title="Individual Results">
           <div class="section-heading">
-            <div><p class="section-kicker">Patient Search</p><h2>Individual FibroScan Results</h2><p>Search by patient name or reference ID, then filter results by clinical category.</p></div>
+            <div><p class="section-kicker">Patient Search</p><h2>Individual FibroScan Results</h2><p>Search by Reference ID or imported record number, then filter results by clinical category.</p></div>
           </div>
           <div id="patient-empty" class="no-data-card"><span><i class="fa-regular fa-folder-open"></i></span><h3>No data available for search</h3><p>Please import an Excel file using the button above first.</p><button class="btn btn-primary" type="button" data-open-upload>Import Excel</button></div>
           <div id="patient-content" class="patient-layout hidden">
             <aside class="panel patient-finder">
               <div class="finder-title"><div><h3>Patients</h3><p id="patient-result-count">0 patients found</p></div></div>
-              <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="patient-search" type="search" placeholder="Search by name or ID"></label>
+              <label class="search-field"><i class="fa-solid fa-magnifying-glass"></i><input id="patient-search" type="search" placeholder="Search by ID or record number"></label>
               <div class="filter-row">
                 <label><span>Sex</span><select id="gender-filter"><option value="">All</option><option value="Male">Male</option><option value="Female">Female</option><option value="Unspecified">Unspecified</option></select></label>
                 <label><span>Examination Date</span><select id="date-filter"><option value="">All Dates</option></select></label>
@@ -346,9 +351,9 @@
       <input id="excel-input" type="file" accept=".xlsx,.xls" multiple hidden>
       <div class="expected-columns">
         <strong>Supported Columns</strong>
-        <p>Exam file name · First name · Last name · CAP Enhanced Mean (dB/m) · E Median (kPa) · Height · Weight · Gender · Waist Circumference · Exam date (day) · Exam date (month) · Exam date (year) · Examiner Name</p>
+        <p>Exam file name · First name · Last name · CAP Enhanced Mean (dB/m) · E Median (kPa) · Height · Weight · Gender · Waist Circumference · Exam date (day) · Exam date (month) · Exam date (year)</p>
       </div>
-      <div class="modal-privacy"><i class="fa-solid fa-shield-halved"></i><span><strong>Your data stays on your device</strong><small>The system does not upload or store files on the server</small></span></div>
+      <div class="modal-privacy"><i class="fa-solid fa-shield-halved"></i><span><strong>Your data stays on your device</strong><small>Names are processed only in browser memory for record matching and are never displayed or included in PDF exports.</small></span></div>
     </div>
   </div>
 
